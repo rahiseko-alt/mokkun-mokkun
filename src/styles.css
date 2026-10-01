@@ -38,15 +38,10 @@
 .bh-mark-ink { background: var(--bh-ink); }
 
 .bh-add-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-.bh-add-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 84px; padding: 10px 4px; border: var(--bh-border); background: var(--bh-paper); font-size: 14px; font-weight: 800; text-align: center; transition: background-color 0.12s, color 0.12s; }
-.bh-add-button small { display: block; margin-top: 2px; color: var(--bh-muted); font-size: 10px; font-weight: 400; white-space: nowrap; }
+.bh-add-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 72px; padding: 10px 4px; border: var(--bh-border); background: var(--bh-paper); font-size: 14px; font-weight: 800; text-align: center; transition: background-color 0.12s, color 0.12s; }
 .bh-add-button:hover { background: var(--bh-ink); color: var(--bh-paper); }
-.bh-add-button:hover small { color: var(--bh-paper); }
 .bh-add-button:active { background: var(--bh-red); border-color: var(--bh-red); color: var(--bh-paper); }
 
-.bh-selection { display: flex; flex-direction: column; gap: 10px; }
-.bh-selection-label { display: block; padding: 8px 10px; border: var(--bh-border); font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
-.bh-hint { color: var(--bh-muted); font-size: 12px; }
 
 .bh-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .bh-field > span { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--bh-ink); }
@@ -61,12 +56,8 @@
 .bh-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 8px 14px; border: var(--bh-border); background: var(--bh-paper); color: var(--bh-ink); font-size: 13px; font-weight: 700; transition: background-color 0.12s, color 0.12s; }
 .bh-btn:hover { background: var(--bh-ink); color: var(--bh-paper); }
 .bh-btn-small { min-height: 36px; padding: 4px 10px; font-size: 12px; }
-.bh-link-action { background: var(--bh-yellow); }
-.bh-link-action.is-linked { background: var(--bh-blue); border-color: var(--bh-blue); color: var(--bh-paper); }
 .bh-delete { border-color: var(--bh-red); color: var(--bh-red); }
 .bh-delete:hover { background: var(--bh-red); color: var(--bh-paper); }
-.bh-note { display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 2px solid var(--bh-red); color: var(--bh-red); font-size: 11px; }
-.bh-note svg { flex-shrink: 0; margin-top: 1px; }
 
 .bh-page-tree { margin: 0 -16px; }
 .bh-page-tree ul { margin: 0; }
@@ -87,31 +78,19 @@
 .mc-control { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 8px 12px; border: var(--bh-border); background: var(--bh-paper); color: var(--bh-ink); font-size: 13px; font-weight: 700; white-space: nowrap; transition: background-color 0.12s, color 0.12s; }
 .mc-control:hover { background: var(--bh-ink); color: var(--bh-paper); }
 .mc-control svg { flex-shrink: 0; }
-.mc-save { background: var(--bh-red); border-color: var(--bh-red); color: var(--bh-paper); }
-.mc-save:hover { background: var(--bh-ink); border-color: var(--bh-ink); }
 .mc-panel-toggle { background: var(--bh-ink); color: var(--bh-paper); }
 .mc-panel-toggle[aria-expanded='true'] { background: var(--bh-blue); border-color: var(--bh-blue); }
 .mc-name-edit input { min-width: 0; width: min(220px, 100%); min-height: 44px; padding: 8px; border: var(--bh-border); font-size: 16px; }
-.mc-menu { position: absolute; right: 16px; top: calc(100% + 4px); z-index: 75; display: grid; gap: 4px; width: 190px; padding: 8px; background: var(--bh-paper); border: var(--bh-border); box-shadow: 6px 6px 0 var(--bh-ink); }
-.mc-menu .mc-control { justify-content: flex-start; border-color: transparent; }
-.mc-save-status { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); padding: 8px 14px; border: var(--bh-border); background: var(--bh-yellow); color: var(--bh-ink); font-size: 13px; font-weight: 700; }
 @media (max-width: 767px) {
   .mc-header { padding: 6px 10px; }
   .mc-header-actions { gap: 6px; }
   .mc-project-name { max-width: 100%; font-size: 14px; }
-  .mc-save { padding: 8px; font-size: 12px; }
-  .mc-save span { display: none; }
-  .mc-more { padding: 8px; }
-  .mc-name-edit { gap: 4px; }
+      .mc-name-edit { gap: 4px; }
   .mc-name-edit input { width: 100%; }
 }
 
 /* ===== 描画画面まわり ===== */
-.canvas-region { display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
-.canvas-empty { position: absolute; top: 100px; left: 24px; right: 24px; text-align: center; color: var(--bh-muted); pointer-events: none; }
-.canvas-empty-icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; background: var(--bh-red); color: var(--bh-paper); font-size: 28px; font-weight: 700; }
-.canvas-empty strong { display: block; margin-bottom: 10px; color: var(--bh-ink); font-size: 18px; font-weight: 800; letter-spacing: 0.04em; }
-.canvas-empty p { font-size: 14px; line-height: 1.8; }
+.canvas-region { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
 .mobile-page-location { display: flex; flex-shrink: 0; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bh-paper); border-bottom: var(--bh-border); }
 .mobile-page-location button { flex-shrink: 0; min-height: 40px; padding: 0 10px; border: var(--bh-border); font-size: 13px; font-weight: 700; }
 .mobile-page-location > div { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 0; }
@@ -136,10 +115,6 @@
 .canvas-text { position: absolute; box-sizing: border-box; padding: 2px 4px; border: 1px dashed rgba(17, 17, 17, 0.25); background: transparent; color: var(--bh-ink); line-height: 1.4; font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; cursor: move; touch-action: none; }
 .canvas-text.is-selected { overflow: visible; border: 2px solid var(--bh-blue); }
 .canvas-text > span { display: block; overflow: hidden; height: 100%; }
-.bh-segment { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.bh-segment button { min-height: 44px; border: var(--bh-border); margin-left: -2px; font-weight: 700; }
-.bh-segment button:first-child { margin-left: 0; }
-.bh-segment button[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }
 
 /* 子ページ作成/移動のマーク: ボタン本体より目立たない、細い黒の破線の丸 */
 .canvas-link-tab { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; background: transparent; color: var(--bh-ink); cursor: pointer; }
@@ -147,3 +122,27 @@
 .canvas-link-tab:hover .canvas-link-mark { opacity: 1; }
 @media (max-width: 767px) { .canvas-link-tab { width: 36px; height: 36px; } }
 .canvas-text-input { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; resize: none; outline: none; }
+
+/* プロジェクト操作 (保存・保存一覧・新規作成・設定) */
+.bh-project-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bh-save { background: var(--bh-red); border-color: var(--bh-red); color: var(--bh-paper); }
+.bh-save:hover { background: var(--bh-ink); border-color: var(--bh-ink); }
+
+/* 選択中の要素の削除ボタン (右上) */
+.canvas-delete { position: absolute; top: -30px; right: -2px; z-index: 31; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; border: 2px solid var(--bh-ink); background: var(--bh-paper); color: var(--bh-ink); cursor: pointer; }
+.canvas-delete:hover { background: var(--bh-red); border-color: var(--bh-red); color: var(--bh-paper); }
+@media (max-width: 767px) { .canvas-delete { top: -40px; width: 32px; height: 32px; } }
+.canvas-label-input { width: 100%; min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: center; outline: none; }
+
+/* 鉛筆レイヤー */
+.canvas-draw-layer { position: absolute; top: 0; left: 0; z-index: 40; overflow: visible; pointer-events: none; }
+.canvas-draw-layer path { fill: none; stroke: var(--bh-ink); stroke-linecap: round; stroke-linejoin: round; }
+.canvas-draw-layer.is-active { pointer-events: auto; touch-action: none; }
+.canvas-draw-layer.is-pen { cursor: crosshair; }
+.canvas-draw-layer.is-eraser { cursor: cell; }
+
+/* 描画ツール切り替え (描画画面の左下に常時表示) */
+.canvas-tools { position: absolute; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 45; display: flex; background: var(--bh-paper); border: var(--bh-border); }
+.canvas-tools button { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-left: var(--bh-border); }
+.canvas-tools button:first-child { border-left: 0; }
+.canvas-tools button[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }

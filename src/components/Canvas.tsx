@@ -5,9 +5,11 @@ import {
   ImageElement,
   ButtonElement,
   TextElement,
+  Stroke,
+  DrawTool,
 } from '../types'
 import { MIN_ELEMENT_WIDTH, MIN_ELEMENT_HEIGHT } from '../constants'
-import { ArrowRight, Plus } from 'lucide-react'
+import { ArrowRight, Plus, X, MousePointer2, Pencil, Eraser } from 'lucide-react'
 
 interface CanvasProps {
   elements: CanvasElement[]
@@ -15,8 +17,23 @@ interface CanvasProps {
   onSelectElement: (id: string | null) => void
   onUpdateElement: (updated: CanvasElement) => void
   onButtonClick: (button: ButtonElement) => void
+  onUpdateButtonLabel: (label: string) => void
+  onDeleteElement: () => void
+  strokes: Stroke[]
+  onAddStroke: (points: number[]) => void
+  onRemoveStrokes: (ids: string[]) => void
+  tool: DrawTool
+  onChangeTool: (tool: DrawTool) => void
   isMobile?: boolean
 }
+
+const TOOLS: { key: DrawTool; label: string; Icon: typeof Pencil }[] = [
+  { key: 'select', label: '選択', Icon: MousePointer2 },
+  { key: 'pen', label: '鉛筆', Icon: Pencil },
+  { key: 'eraser', label: '消しゴム', Icon: Eraser },
+]
+const ERASER_RADIUS = 14
+const toPath = (points: number[]) => points.reduce((d, v, i) => d + (i % 2 === 0 ? `${i === 0 ? 'M' : ' L'}${v}` : ` ${v}`), '')
 
 type DragMode = 'move' | 'nw' | 'ne' | 'se' | 'sw' | 'n' | 's' | 'e' | 'w' | null
 
@@ -26,6 +43,13 @@ export const Canvas: React.FC<CanvasProps> = ({
   onSelectElement,
   onUpdateElement,
   onButtonClick,
+  onUpdateButtonLabel,
+  onDeleteElement,
+  strokes,
+  onAddStroke,
+  onRemoveStrokes,
+  tool,
+  onChangeTool,
   isMobile = false,
 }) => {
   const [dragMode, setDragMode] = useState<DragMode>(null)
@@ -35,13 +59,16 @@ export const Canvas: React.FC<CanvasProps> = ({
     y: number
     width: number
     height: number
+    fontSize?: number
   } | null>(null)
 
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const [viewportWidth, setViewportWidth] = useState(360)
   const dragScale = useRef(1)
-  // テキストは「選択済みの状態でもう一度タップ」で描画画面上で直接編集する
-  const [editingTextId, setEditingTextId] = useState<string | null>(null)
+  // テキストとボタン名は「選択済みの状態でもう一度タップ」で描画画面上で直接編集する
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draftStroke, setDraftStroke] = useState<number[] | null>(null)
+  const drawLayerRef = useRef<SVGSVGElement | null>(null)
   const tapRef = useRef<{ id: string; wasSelected: boolean; moved: boolean } | null>(null)
   const sceneWidth = isMobile ? Math.max(360, ...elements.map(el => el.x + el.width + 32)) : 1400
   const sceneHeight = Math.max(isMobile ? 560 : 1000, ...elements.map(el => el.y + el.height + 32))
@@ -72,7 +99,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       }
     }
     tapRef.current = { id: element.id, wasSelected: element.id === selectedElementId, moved: false }
-    if (editingTextId && editingTextId !== element.id) setEditingTextId(null)
+    if (editingId && editingId !== element.id) setEditingId(null)
     onSelectElement(element.id)
     dragScale.current = scale
     setDragMode(mode)
@@ -82,6 +109,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       y: element.y,
       width: element.width,
       height: element.height,
+      fontSize: element.type === 'text' ? element.fontSize : undefined,
     })
   }
 
@@ -125,8 +153,13 @@ export const Canvas: React.FC<CanvasProps> = ({
         }
       }
 
+      const resized = dragMode !== 'move' && selectedElement.type === 'text' && dragStartElementState.fontSize
+        // テキストは枠の大きさに合わせて文字も拡大縮小する
+        ? { fontSize: Math.max(8, Math.round(dragStartElementState.fontSize * newH / dragStartElementState.height)) }
+        : {}
       onUpdateElement({
         ...selectedElement,
+        ...resized,
         x: Math.round(newX),
         y: Math.round(newY),
         width: Math.round(newW),
@@ -138,8 +171,8 @@ export const Canvas: React.FC<CanvasProps> = ({
     const handlePointerUp = () => {
       const tap = tapRef.current
       tapRef.current = null
-      if (tap && dragMode === 'move' && tap.wasSelected && !tap.moved && selectedElement?.type === 'text') {
-        setEditingTextId(tap.id)
+      if (tap && dragMode === 'move' && tap.wasSelected && !tap.moved && (selectedElement?.type === 'text' || selectedElement?.type === 'button')) {
+        setEditingId(tap.id)
       }
       setDragMode(null)
       setDragStartElementState(null)
@@ -161,10 +194,59 @@ export const Canvas: React.FC<CanvasProps> = ({
   // 背景クリックで選択解除
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      setEditingTextId(null)
+      setEditingId(null)
       onSelectElement(null)
     }
   }
+
+  const toScenePoint = (e: React.PointerEvent) => {
+    const rect = drawLayerRef.current?.getBoundingClientRect()
+    const ratio = rect && rect.width ? sceneWidth / rect.width : 1
+    return [Math.round((e.clientX - (rect?.left ?? 0)) * ratio), Math.round((e.clientY - (rect?.top ?? 0)) * ratio)]
+  }
+  const eraseAt = (x: number, y: number) => {
+    const hit = strokes.filter((st) => {
+      for (let i = 0; i < st.points.length; i += 2) {
+        if (Math.hypot(st.points[i] - x, st.points[i + 1] - y) <= ERASER_RADIUS) return true
+      }
+      return false
+    }).map((st) => st.id)
+    if (hit.length) onRemoveStrokes(hit)
+  }
+  const handleDrawPointerDown = (e: React.PointerEvent) => {
+    if (tool === 'select') return
+    e.stopPropagation()
+    try { (e.target as Element).setPointerCapture?.(e.pointerId) } catch { /* 非対応環境 */ }
+    const [x, y] = toScenePoint(e)
+    if (tool === 'pen') setDraftStroke([x, y])
+    else eraseAt(x, y)
+  }
+  const handleDrawPointerMove = (e: React.PointerEvent) => {
+    if (tool === 'pen' && draftStroke) {
+      const [x, y] = toScenePoint(e)
+      setDraftStroke((prev) => (prev ? [...prev, x, y] : prev))
+    } else if (tool === 'eraser' && e.buttons) {
+      const [x, y] = toScenePoint(e)
+      eraseAt(x, y)
+    }
+  }
+  const handleDrawPointerUp = () => {
+    if (draftStroke) {
+      onAddStroke(draftStroke.length === 2 ? [...draftStroke, draftStroke[0] + 0.5, draftStroke[1]] : draftStroke)
+      setDraftStroke(null)
+    }
+  }
+
+  const renderDeleteButton = () => (
+    <button
+      type="button"
+      className="canvas-delete"
+      aria-label="選択中の要素を削除"
+      title="削除"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => { e.stopPropagation(); onDeleteElement() }}
+    ><X size={isMobile ? 16 : 12} /></button>
+  )
 
   // 8方向リサイズハンドルの描画
   const renderResizeHandles = (el: CanvasElement) => {
@@ -179,9 +261,10 @@ export const Canvas: React.FC<CanvasProps> = ({
       touchAction: 'none',
     }
 
-    if (isMobile) return <button aria-label="右下をドラッグしてサイズ変更" style={{ ...handleStyle, bottom: '-14px', right: '-14px', cursor: 'nwse-resize' }} onPointerDown={(e) => handlePointerDown(e, el, 'se')}>↘</button>
+    if (isMobile) return <>{renderDeleteButton()}<button aria-label="右下をドラッグしてサイズ変更" style={{ ...handleStyle, bottom: '-14px', right: '-14px', cursor: 'nwse-resize' }} onPointerDown={(e) => handlePointerDown(e, el, 'se')}>↘</button></>
     return (
       <>
+        {renderDeleteButton()}
         {/* 四隅 */}
         <div
           style={{ ...handleStyle, top: '-5px', left: '-5px', cursor: 'nwse-resize' }}
@@ -264,11 +347,6 @@ export const Canvas: React.FC<CanvasProps> = ({
         style={{ width: sceneWidth, height: sceneHeight, position: 'relative', transform: `scale(${scale})`, transformOrigin: 'top left' }}
         onClick={handleCanvasClick}
       >
-        {elements.length === 0 && <div className="canvas-empty">
-          <span className="canvas-empty-icon">＋</span>
-          <strong>ここに画面をつくりましょう</strong>
-          <p>{isMobile ? '右上の「操作」' : '右の操作パネル'}の「四角」「テキスト」で配置。<br />「ボタン」から次のページをつくれます。</p>
-        </div>}
         {elements.map((el) => {
           const isSelected = el.id === selectedElementId
 
@@ -409,7 +487,19 @@ export const Canvas: React.FC<CanvasProps> = ({
                     maxWidth: '100%',
                   }}
                 >
-                  {btn.label}
+                  {editingId === btn.id ? (
+                    <input
+                      className="canvas-label-input"
+                      aria-label="ボタン名を直接編集"
+                      value={btn.label}
+                      autoFocus
+                      onFocus={(e) => e.currentTarget.select()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onChange={(e) => onUpdateButtonLabel(e.target.value)}
+                      onBlur={() => setEditingId(null)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur() }}
+                    />
+                  ) : btn.label}
                 </span>
 
                 {/* 遷移 / 作成トリガー: ドラッグと干渉しないようボタンの下に出す */}
@@ -426,7 +516,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   <span className="canvas-link-mark">{btn.targetPageId ? <ArrowRight size={10} strokeWidth={1.5} /> : <Plus size={10} strokeWidth={1.5} />}</span>
                 </button>
 
-                {isSelected && renderResizeHandles(btn)}
+                {isSelected && editingId !== btn.id && renderResizeHandles(btn)}
               </div>
             )
           }
@@ -448,7 +538,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   zIndex: isSelected ? 20 : txt.zIndex,
                 }}
               >
-                {editingTextId === txt.id ? (
+                {editingId === txt.id ? (
                   <textarea
                     className="canvas-text-input"
                     aria-label="テキストを直接編集"
@@ -457,21 +547,40 @@ export const Canvas: React.FC<CanvasProps> = ({
                     onFocus={(e) => e.currentTarget.select()}
                     onPointerDown={(e) => e.stopPropagation()}
                     onChange={(e) => onUpdateElement({ ...txt, text: e.target.value, updatedAt: new Date().toISOString() })}
-                    onBlur={() => setEditingTextId(null)}
+                    onBlur={() => setEditingId(null)}
                     onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.blur() }}
                     style={{ fontSize: `${txt.fontSize}px` }}
                   />
                 ) : <span>{txt.text || ' '}</span>}
-                {isSelected && editingTextId !== txt.id && renderResizeHandles(txt)}
+                {isSelected && editingId !== txt.id && renderResizeHandles(txt)}
               </div>
             )
           }
 
           return null
         })}
+        {/* 鉛筆の手書き線。鉛筆/消しゴム中だけ描画画面の操作を受け取る */}
+        <svg
+          ref={drawLayerRef}
+          className={'canvas-draw-layer' + (tool !== 'select' ? ' is-active is-' + tool : '')}
+          width={sceneWidth}
+          height={sceneHeight}
+          onPointerDown={handleDrawPointerDown}
+          onPointerMove={handleDrawPointerMove}
+          onPointerUp={handleDrawPointerUp}
+          onPointerCancel={handleDrawPointerUp}
+        >
+          {strokes.map((st) => <path key={st.id} d={toPath(st.points)} strokeWidth={st.width} />)}
+          {draftStroke && <path d={toPath(draftStroke)} strokeWidth={3} />}
+        </svg>
       </div>
       </div>
     </div>
+      <div className="canvas-tools" role="toolbar" aria-label="描画ツール">
+        {TOOLS.map(({ key, label, Icon }) => (
+          <button key={key} type="button" aria-pressed={tool === key} aria-label={label} title={label} onClick={() => onChangeTool(key)}><Icon size={18} /></button>
+        ))}
+      </div>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import {
   CanvasElement,
   ButtonElement,
   TextElement,
+  DrawTool,
   RectangleElement,
   ImageElement,
   Snapshot,
@@ -28,7 +29,7 @@ import {
   loadSnapshotsFromStorage,
   saveSnapshotsToStorage,
 } from './services/storageService'
-import { TEXT_FONT_SIZES } from './constants'
+import { TEXT_DEFAULT_FONT_SIZE } from './constants'
 import { Header } from './components/Header'
 import { PageListSidebar } from './components/PageListSidebar'
 import { PageInfoPanel } from './components/PageInfoPanel'
@@ -63,6 +64,7 @@ export function App() {
     typeof window !== 'undefined' ? window.innerWidth : 1200
   )
   const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [drawTool, setDrawTool] = useState<DrawTool>('select')
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -193,18 +195,6 @@ export function App() {
         setIsPanelOpen(false)
       }
     }
-  }
-
-  // ページコメントの更新 (13.2)
-  const handleUpdateComment = (comment: string) => {
-    setProjectState((prev) => ({
-      ...prev,
-      pages: prev.pages.map((p) =>
-        p.id === prev.currentPageId
-          ? { ...p, comment, updatedAt: new Date().toISOString() }
-          : p
-      ),
-    }))
   }
 
   // ページ削除要求
@@ -344,7 +334,7 @@ export function App() {
       pageId: currentPage.id,
       type: 'text',
       text: 'テキスト',
-      fontSize: TEXT_FONT_SIZES[1].size,
+      fontSize: TEXT_DEFAULT_FONT_SIZE,
       x: 80 + (currentElements.length % 8) * 20,
       y: 80 + (currentElements.length % 8) * 20,
       width: 200,
@@ -363,6 +353,25 @@ export function App() {
       ),
     }))
     setSelectedElementId(newText.id)
+  }
+
+  // 鉛筆の線を追加 / 消しゴムで消す
+  const handleAddStroke = (points: number[]) => {
+    const stroke = { id: generateUUID(), points, width: 3 }
+    setProjectState((prev) => ({
+      ...prev,
+      pages: prev.pages.map((p) =>
+        p.id === currentPage.id ? { ...p, strokes: [...(p.strokes ?? []), stroke] } : p
+      ),
+    }))
+  }
+  const handleRemoveStrokes = (ids: string[]) => {
+    setProjectState((prev) => ({
+      ...prev,
+      pages: prev.pages.map((p) =>
+        p.id === currentPage.id ? { ...p, strokes: (p.strokes ?? []).filter((st) => !ids.includes(st.id)) } : p
+      ),
+    }))
   }
 
   // 選択中要素の更新 (移動・リサイズ)
@@ -497,17 +506,19 @@ export function App() {
     showToast('識別子設定を保存し、ページパスを更新しました')
   }
 
-  // 選択中要素のオブジェクト
-  const selectedElement =
-    currentElements.find((el) => el.id === selectedElementId) || null
-
-  // 選択中のボタンが指しているページのパス
-  const targetPagePath =
-    selectedElement && selectedElement.type === 'button' && (selectedElement as ButtonElement).targetPageId
-      ? projectState.pages.find(
-          (p) => p.id === (selectedElement as ButtonElement).targetPageId
-        )?.identifierPath || null
-      : null
+  // Delete / Backspace キーで選択中の要素を削除 (入力中は除く)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return
+      const target = e.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+      if (!selectedElementId || activeModal) return
+      e.preventDefault()
+      handleDeleteSelectedElement()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  })
 
   // 削除対象ページおよびその子孫一覧の取得 (14.3)
   const descendantPagesToDelete = pageToDeleteId
@@ -529,11 +540,8 @@ export function App() {
       <Header
         projectName={projectState.project.name}
         onUpdateProjectName={handleUpdateProjectName}
-        onNewProject={handleNewProject}
-        onSaveSnapshot={handleSaveSnapshot}
-        onOpenSnapshots={() => setActiveModal('snapshots')}
-        onOpenSettings={() => setActiveModal('settings')}
         saveToastMessage={toastMessage}
+        isMobile={isMobile}
         onTogglePanel={() => setIsPanelOpen((prev) => !prev)}
         isPanelOpen={isPanelOpen}
       />
@@ -541,7 +549,6 @@ export function App() {
       {isMobile && <div className="mobile-page-location">
         {currentPage.parentPageId && <button onClick={() => handleSelectPage(currentPage.parentPageId!)}>← 親へ戻る</button>}
         <div><span>{currentPage.identifierPath}</span><strong>{currentPage.displayName}</strong></div>
-        <small>編集は自動保存</small>
       </div>}
       {/* メインワークスペース: 左に描画画面、右に操作パネル (モバイル時はスライドイン) */}
       <div className="bh-workspace">
@@ -554,6 +561,13 @@ export function App() {
             onSelectElement={setSelectedElementId}
             onUpdateElement={handleUpdateElement}
             onButtonClick={handleButtonClick}
+            onUpdateButtonLabel={handleUpdateButtonLabel}
+            onDeleteElement={handleDeleteSelectedElement}
+            strokes={currentPage.strokes ?? []}
+            onAddStroke={handleAddStroke}
+            onRemoveStrokes={handleRemoveStrokes}
+            tool={drawTool}
+            onChangeTool={(next) => { setDrawTool(next); if (next !== 'select') setSelectedElementId(null) }}
           />
         </main>
 
@@ -573,17 +587,14 @@ export function App() {
             onAddImage={withPanelClose(handleAddImage)}
             onAddButton={withPanelClose(handleAddButton)}
             onAddText={withPanelClose(handleAddText)}
-            selectedElement={selectedElement}
-            onDeleteSelected={handleDeleteSelectedElement}
-            onUpdateElement={handleUpdateElement}
-            onUpdateButtonLabel={handleUpdateButtonLabel}
-            onTriggerButtonAction={withPanelClose(handleButtonClick)}
-            targetPagePath={targetPagePath}
+            onSaveSnapshot={withPanelClose(handleSaveSnapshot)}
+            onOpenSnapshots={withPanelClose(() => setActiveModal('snapshots'))}
+            onNewProject={withPanelClose(handleNewProject)}
+            onOpenSettings={withPanelClose(() => setActiveModal('settings'))}
           />
           <PageInfoPanel
             page={currentPage}
             isOnlyPage={projectState.pages.length <= 1}
-            onUpdateComment={handleUpdateComment}
             onRequestDeletePage={handleRequestDeletePage}
           />
           <PageListSidebar
