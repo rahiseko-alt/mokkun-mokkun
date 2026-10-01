@@ -567,7 +567,6 @@ export function App() {
             onAddStroke={handleAddStroke}
             onRemoveStrokes={handleRemoveStrokes}
             tool={drawTool}
-            onChangeTool={(next) => { setDrawTool(next); if (next !== 'select') setSelectedElementId(null) }}
           />
         </main>
 
@@ -575,12 +574,12 @@ export function App() {
         <aside
           id="control-panel"
           className={'bh-panel' + (isMobile ? ' is-drawer' : '') + (isMobile && isPanelOpen ? ' is-open' : '')}
-          aria-label="操作パネル"
+          aria-label="パネル"
           inert={isMobile && !isPanelOpen}
         >
           {isMobile && <div className="bh-panel-head">
-            <strong>操作パネル</strong>
-            <button type="button" className="bh-btn bh-btn-small" onClick={() => setIsPanelOpen(false)} aria-label="操作パネルを閉じる"><X size={18} /></button>
+            <strong>パネル</strong>
+            <button type="button" className="bh-btn bh-btn-small" onClick={() => setIsPanelOpen(false)} aria-label="パネルを閉じる"><X size={18} /></button>
           </div>}
           <Toolbar
             onAddRectangle={withPanelClose(handleAddRectangle)}
@@ -591,6 +590,8 @@ export function App() {
             onOpenSnapshots={withPanelClose(() => setActiveModal('snapshots'))}
             onNewProject={withPanelClose(handleNewProject)}
             onOpenSettings={withPanelClose(() => setActiveModal('settings'))}
+            tool={drawTool}
+            onChangeTool={withPanelClose((next: DrawTool) => { setDrawTool(next); if (next !== 'select') setSelectedElementId(null) })}
           />
           <PageInfoPanel
             page={currentPage}

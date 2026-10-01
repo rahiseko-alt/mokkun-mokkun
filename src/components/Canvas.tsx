@@ -9,7 +9,7 @@ import {
   DrawTool,
 } from '../types'
 import { MIN_ELEMENT_WIDTH, MIN_ELEMENT_HEIGHT } from '../constants'
-import { ArrowRight, Plus, X, MousePointer2, Pencil, Eraser } from 'lucide-react'
+import { ArrowRight, Plus, X } from 'lucide-react'
 
 interface CanvasProps {
   elements: CanvasElement[]
@@ -23,15 +23,9 @@ interface CanvasProps {
   onAddStroke: (points: number[]) => void
   onRemoveStrokes: (ids: string[]) => void
   tool: DrawTool
-  onChangeTool: (tool: DrawTool) => void
   isMobile?: boolean
 }
 
-const TOOLS: { key: DrawTool; label: string; Icon: typeof Pencil }[] = [
-  { key: 'select', label: '選択', Icon: MousePointer2 },
-  { key: 'pen', label: '鉛筆', Icon: Pencil },
-  { key: 'eraser', label: '消しゴム', Icon: Eraser },
-]
 const ERASER_RADIUS = 14
 const toPath = (points: number[]) => points.reduce((d, v, i) => d + (i % 2 === 0 ? `${i === 0 ? 'M' : ' L'}${v}` : ` ${v}`), '')
 
@@ -49,7 +43,6 @@ export const Canvas: React.FC<CanvasProps> = ({
   onAddStroke,
   onRemoveStrokes,
   tool,
-  onChangeTool,
   isMobile = false,
 }) => {
   const [dragMode, setDragMode] = useState<DragMode>(null)
@@ -576,11 +569,6 @@ export const Canvas: React.FC<CanvasProps> = ({
       </div>
       </div>
     </div>
-      <div className="canvas-tools" role="toolbar" aria-label="描画ツール">
-        {TOOLS.map(({ key, label, Icon }) => (
-          <button key={key} type="button" aria-pressed={tool === key} aria-label={label} title={label} onClick={() => onChangeTool(key)}><Icon size={18} /></button>
-        ))}
-      </div>
     </div>
   )
 }

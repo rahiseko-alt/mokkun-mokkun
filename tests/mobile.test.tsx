@@ -3,7 +3,7 @@ import { fireEvent, render, screen, cleanup, within } from '@testing-library/rea
 import '@testing-library/jest-dom'
 import { App } from '../src/App'
 
-const openPanel = () => fireEvent.click(screen.getByRole('button', { name: '操作' }))
+const openPanel = () => fireEvent.click(screen.getByRole('button', { name: 'パネル' }))
 
 const originalWidth = window.innerWidth
 beforeEach(() => {
@@ -76,8 +76,8 @@ describe('Mobile editing workflow', () => {
 
   it('slides the control panel in and out and saves a restorable snapshot', () => {
     render(<App />)
-    const toggle = screen.getByRole('button', { name: '操作' })
-    const panel = screen.getByRole('complementary', { name: '操作パネル' })
+    const toggle = screen.getByRole('button', { name: 'パネル' })
+    const panel = screen.getByRole('complementary', { name: 'パネル' })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     expect(panel).toHaveAttribute('inert')
     openPanel()

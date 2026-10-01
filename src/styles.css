@@ -2,7 +2,7 @@
 .bh-app { display: flex; flex-direction: column; width: 100vw; height: 100dvh; overflow: hidden; background: var(--bh-paper); }
 .bh-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--bh-panel-width); flex: 1; min-height: 0; }
 .bh-stage { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--bh-paper); }
-.bh-panel { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: var(--bh-paper); border-left: 4px solid var(--bh-ink); overscroll-behavior: contain; }
+.bh-panel { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: var(--bh-paper); border-left: 4px solid var(--bh-ink); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 
 /* モバイル: 操作パネルは右からスライドイン/アウト */
 @media (max-width: 767px) {
@@ -28,7 +28,7 @@
 
 /* ===== パネル内セクション ===== */
 .bh-section { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-bottom: var(--bh-border); }
-.bh-section:last-child { border-bottom: 0; flex: 1; }
+.bh-section:last-child { border-bottom: 0; }
 .bh-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .bh-section-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; letter-spacing: 0.12em; }
 .bh-mark { display: inline-block; flex-shrink: 0; width: 12px; height: 12px; }
@@ -141,8 +141,9 @@
 .canvas-draw-layer.is-pen { cursor: crosshair; }
 .canvas-draw-layer.is-eraser { cursor: cell; }
 
-/* 描画ツール切り替え (描画画面の左下に常時表示) */
-.canvas-tools { position: absolute; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 45; display: flex; background: var(--bh-paper); border: var(--bh-border); }
-.canvas-tools button { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-left: var(--bh-border); }
-.canvas-tools button:first-child { border-left: 0; }
-.canvas-tools button[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }
+
+/* パネルの各セクションは縮めず、はみ出た分はパネル自体をスクロールさせる */
+.bh-panel > * { flex-shrink: 0; }
+.bh-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bh-tools .bh-btn { padding-inline: 6px; }
+.bh-tools .bh-btn[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }

@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
-import { Square, Image as ImageIcon, MousePointerClick, Type, Save, History, FolderPlus, Settings } from 'lucide-react'
+import { Square, Image as ImageIcon, MousePointerClick, Type, Save, History, FolderPlus, Settings, MousePointer2, Pencil, Eraser } from 'lucide-react'
+import { DrawTool } from '../types'
 
 interface ToolbarProps {
   onAddRectangle: () => void
@@ -10,11 +11,19 @@ interface ToolbarProps {
   onOpenSnapshots: () => void
   onNewProject: () => void
   onOpenSettings: () => void
+  tool: DrawTool
+  onChangeTool: (tool: DrawTool) => void
 }
+
+const TOOLS: { key: DrawTool; label: string; Icon: typeof Pencil }[] = [
+  { key: 'select', label: '選択', Icon: MousePointer2 },
+  { key: 'pen', label: '鉛筆', Icon: Pencil },
+  { key: 'eraser', label: '消しゴム', Icon: Eraser },
+]
 
 export const Toolbar: React.FC<ToolbarProps> = ({
   onAddRectangle, onAddImage, onAddButton, onAddText,
-  onSaveSnapshot, onOpenSnapshots, onNewProject, onOpenSettings,
+  onSaveSnapshot, onOpenSnapshots, onNewProject, onOpenSettings, tool, onChangeTool,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +41,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <input ref={fileInputRef} type="file" accept="image/*" aria-label="追加する画像" style={{ display: 'none' }} onChange={handleFileChange} />
           <button type="button" className="bh-add-button" onClick={onAddButton} title="ボタンを追加"><MousePointerClick size={22} /><span>ボタン</span></button>
           <button type="button" className="bh-add-button" onClick={onAddText} title="テキストを追加"><Type size={22} /><span>テキスト</span></button>
+        </div>
+      </section>
+      <section className="bh-section">
+        <h2 className="bh-section-title"><span className="bh-mark bh-mark-ink" />描画</h2>
+        <div className="bh-tools" role="group" aria-label="描画ツール">
+          {TOOLS.map(({ key, label, Icon }) => (
+            <button key={key} type="button" className="bh-btn" aria-pressed={tool === key} onClick={() => onChangeTool(key)}><Icon size={16} /><span>{label}</span></button>
+          ))}
         </div>
       </section>
       <section className="bh-section">

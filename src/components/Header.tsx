@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Edit2, Check, SlidersHorizontal } from 'lucide-react'
+import { Edit2, Check } from 'lucide-react'
 
 interface HeaderProps {
   projectName: string
@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
         {isMobile && onTogglePanel && <div className="mc-header-actions">
-          <button type="button" className="mc-control mc-panel-toggle" aria-expanded={!!isPanelOpen} aria-controls="control-panel" onClick={onTogglePanel} title="操作パネルを開閉"><SlidersHorizontal size={18} /><span>操作</span></button>
+          <button type="button" className="mc-control mc-panel-toggle" aria-expanded={!!isPanelOpen} aria-controls="control-panel" onClick={onTogglePanel} title="パネルを開閉">パネル</button>
         </div>}
       </div>
       {saveToastMessage && <div className="mc-save-status" role="status">{saveToastMessage}</div>}
