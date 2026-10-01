@@ -3,6 +3,8 @@ import {
   ProjectState,
   CanvasElement,
   ButtonElement,
+  TextElement,
+  DrawTool,
   RectangleElement,
   ImageElement,
   Snapshot,
@@ -27,11 +29,13 @@ import {
   loadSnapshotsFromStorage,
   saveSnapshotsToStorage,
 } from './services/storageService'
+import { TEXT_DEFAULT_FONT_SIZE } from './constants'
 import { Header } from './components/Header'
 import { PageListSidebar } from './components/PageListSidebar'
 import { PageInfoPanel } from './components/PageInfoPanel'
 import { Canvas } from './components/Canvas'
 import { Toolbar } from './components/Toolbar'
+import { X } from 'lucide-react'
 import { CreateChildPageModal } from './components/modals/CreateChildPageModal'
 import { NoTokenModal } from './components/modals/NoTokenModal'
 import { DeleteConfirmModal } from './components/modals/DeleteConfirmModal'
@@ -59,8 +63,8 @@ export function App() {
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== 'undefined' ? window.innerWidth : 1200
   )
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false)
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [drawTool, setDrawTool] = useState<DrawTool>('select')
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -69,6 +73,12 @@ export function App() {
   }, [])
 
   const isMobile = windowWidth < 768
+
+  // モバイルでは操作後にパネルを閉じ、描画画面で結果を確認できるようにする
+  const withPanelClose = <T extends unknown[]>(action: (...args: T) => void) => (...args: T) => {
+    action(...args)
+    if (isMobile) setIsPanelOpen(false)
+  }
 
   // モーダル管理
   const [activeModal, setActiveModal] = useState<
@@ -168,7 +178,7 @@ export function App() {
     }))
     setSelectedElementId(null)
     if (isMobile) {
-      setIsSidebarOpen(false)
+      setIsPanelOpen(false)
     }
   }
 
@@ -182,33 +192,9 @@ export function App() {
       setSelectedElementId(null)
       showToast('ルートページを作成しました')
       if (isMobile) {
-        setIsSidebarOpen(false)
+        setIsPanelOpen(false)
       }
     }
-  }
-
-  // ページ表示名の更新
-  const handleUpdateDisplayName = (displayName: string) => {
-    setProjectState((prev) => ({
-      ...prev,
-      pages: prev.pages.map((p) =>
-        p.id === prev.currentPageId
-          ? { ...p, displayName, updatedAt: new Date().toISOString() }
-          : p
-      ),
-    }))
-  }
-
-  // ページコメントの更新 (13.2)
-  const handleUpdateComment = (comment: string) => {
-    setProjectState((prev) => ({
-      ...prev,
-      pages: prev.pages.map((p) =>
-        p.id === prev.currentPageId
-          ? { ...p, comment, updatedAt: new Date().toISOString() }
-          : p
-      ),
-    }))
   }
 
   // ページ削除要求
@@ -216,7 +202,7 @@ export function App() {
     setPageToDeleteId(currentPage.id)
     setActiveModal('deleteConfirm')
     if (isMobile) {
-      setIsInfoPanelOpen(false)
+      setIsPanelOpen(false)
     }
   }
 
@@ -341,6 +327,53 @@ export function App() {
     setSelectedElementId(newBtn.id)
   }
 
+  // テキストの追加 (背景透明・枠のリサイズで折り返し幅を調整)
+  const handleAddText = () => {
+    const newText: TextElement = {
+      id: generateUUID(),
+      pageId: currentPage.id,
+      type: 'text',
+      text: 'テキスト',
+      fontSize: TEXT_DEFAULT_FONT_SIZE,
+      x: 80 + (currentElements.length % 8) * 20,
+      y: 80 + (currentElements.length % 8) * 20,
+      width: 200,
+      height: 48,
+      zIndex: currentElements.length + 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    setProjectState((prev) => ({
+      ...prev,
+      pages: prev.pages.map((p) =>
+        p.id === currentPage.id
+          ? { ...p, elements: [...p.elements, newText] }
+          : p
+      ),
+    }))
+    setSelectedElementId(newText.id)
+  }
+
+  // 鉛筆の線を追加 / 消しゴムで消す
+  const handleAddStroke = (points: number[]) => {
+    const stroke = { id: generateUUID(), points, width: 3 }
+    setProjectState((prev) => ({
+      ...prev,
+      pages: prev.pages.map((p) =>
+        p.id === currentPage.id ? { ...p, strokes: [...(p.strokes ?? []), stroke] } : p
+      ),
+    }))
+  }
+  const handleRemoveStrokes = (ids: string[]) => {
+    setProjectState((prev) => ({
+      ...prev,
+      pages: prev.pages.map((p) =>
+        p.id === currentPage.id ? { ...p, strokes: (p.strokes ?? []).filter((st) => !ids.includes(st.id)) } : p
+      ),
+    }))
+  }
+
   // 選択中要素の更新 (移動・リサイズ)
   const handleUpdateElement = useCallback((updated: CanvasElement) => {
     setProjectState((prev) => ({
@@ -377,11 +410,18 @@ export function App() {
   }
 
   // 選択中ボタンのラベル変更 (11.1, T-007)
+  // 遷移先ページがあれば、そのページ名もボタン名に揃える
   const handleUpdateButtonLabel = (label: string) => {
     if (!selectedElementId) return
+    const targetPageId = currentElements.find(
+      (el): el is ButtonElement => el.id === selectedElementId && el.type === 'button'
+    )?.targetPageId
     setProjectState((prev) => ({
       ...prev,
       pages: prev.pages.map((p) => {
+        if (targetPageId && p.id === targetPageId) {
+          return { ...p, displayName: label.trim() || '新規ページ', updatedAt: new Date().toISOString() }
+        }
         if (p.id === currentPage.id) {
           return {
             ...p,
@@ -429,13 +469,15 @@ export function App() {
   }
 
   // 子ページ作成の確定 (12.1-12.3)
-  const handleConfirmCreateChildPage = (displayName: string) => {
+  // ページ名はユーザーに決めさせず、ボタン名をそのまま使う
+  const handleConfirmCreateChildPage = () => {
     if (!pendingButton) return
+    const currentButton = currentElements.find((el) => el.id === pendingButton.id) as ButtonElement | undefined
     const res = createChildPageFromButton(
       projectState,
       currentPage.id,
       pendingButton.id,
-      displayName
+      (currentButton?.label ?? pendingButton.label).trim() || '新規ページ'
     )
     if ('error' in res) {
       setActiveModal('noToken')
@@ -464,17 +506,19 @@ export function App() {
     showToast('識別子設定を保存し、ページパスを更新しました')
   }
 
-  // 選択中要素のオブジェクト
-  const selectedElement =
-    currentElements.find((el) => el.id === selectedElementId) || null
-
-  // 選択中のボタンが指しているページのパス
-  const targetPagePath =
-    selectedElement && selectedElement.type === 'button' && (selectedElement as ButtonElement).targetPageId
-      ? projectState.pages.find(
-          (p) => p.id === (selectedElement as ButtonElement).targetPageId
-        )?.identifierPath || null
-      : null
+  // Delete / Backspace キーで選択中の要素を削除 (入力中は除く)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return
+      const target = e.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+      if (!selectedElementId || activeModal) return
+      e.preventDefault()
+      handleDeleteSelectedElement()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  })
 
   // 削除対象ページおよびその子孫一覧の取得 (14.3)
   const descendantPagesToDelete = pageToDeleteId
@@ -491,92 +535,24 @@ export function App() {
   )
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100vw',
-        height: '100dvh',
-        overflow: 'hidden',
-        backgroundColor: '#f8fafc',
-      }}
-    >
-      {/* 5.1 上部ヘッダー (レスポンシブトグル付き) */}
+    <div className="bh-app">
+      {/* 5.1 上部ヘッダー (モバイル時は操作パネルの開閉ボタン付き) */}
       <Header
         projectName={projectState.project.name}
         onUpdateProjectName={handleUpdateProjectName}
-        onNewProject={handleNewProject}
-        onSaveSnapshot={handleSaveSnapshot}
-        onOpenSnapshots={() => setActiveModal('snapshots')}
-        onOpenSettings={() => setActiveModal('settings')}
         saveToastMessage={toastMessage}
-        onToggleSidebar={() => { setIsSidebarOpen((prev) => !prev); setIsInfoPanelOpen(false) }}
-        onToggleInfoPanel={() => { setIsInfoPanelOpen((prev) => !prev); setIsSidebarOpen(false) }}
-        isSidebarOpen={isSidebarOpen}
-        isInfoPanelOpen={isInfoPanelOpen}
+        isMobile={isMobile}
+        onTogglePanel={() => setIsPanelOpen((prev) => !prev)}
+        isPanelOpen={isPanelOpen}
       />
 
       {isMobile && <div className="mobile-page-location">
         {currentPage.parentPageId && <button onClick={() => handleSelectPage(currentPage.parentPageId!)}>← 親へ戻る</button>}
         <div><span>{currentPage.identifierPath}</span><strong>{currentPage.displayName}</strong></div>
-        <small>編集は自動保存</small>
       </div>}
-      {/* メインワークスペース */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {/* 左: ページ階層一覧 (デスクトップ時は常時、モバイル時はドロワー) */}
-        {!isMobile ? (
-          <PageListSidebar
-            pages={projectState.pages}
-            currentPageId={currentPage.id}
-            onSelectPage={handleSelectPage}
-            onAddRootPage={handleAddRootPage}
-          />
-        ) : (
-          isSidebarOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(15, 23, 42, 0.35)',
-                zIndex: 45,
-                display: 'flex',
-              }}
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <div
-                className="drawer-left"
-                style={{
-                  height: '100%',
-                  boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
-                  backgroundColor: '#ffffff',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <PageListSidebar
-                  pages={projectState.pages}
-                  currentPageId={currentPage.id}
-                  onSelectPage={handleSelectPage}
-                  onAddRootPage={handleAddRootPage}
-                  onClose={() => setIsSidebarOpen(false)}
-                />
-              </div>
-            </div>
-          )
-        )}
-
-        {/* 中央: 白いモックキャンバス + ツールバー */}
-        <main
-          style={{
-            minWidth: 0,
-            minHeight: 0,
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            backgroundColor: '#ffffff',
-            position: 'relative',
-          }}
-        >
+      {/* メインワークスペース: 左に描画画面、右に操作パネル (モバイル時はスライドイン) */}
+      <div className="bh-workspace">
+        <main className="bh-stage">
           <Canvas
             key={currentPage.id}
             isMobile={isMobile}
@@ -585,82 +561,50 @@ export function App() {
             onSelectElement={setSelectedElementId}
             onUpdateElement={handleUpdateElement}
             onButtonClick={handleButtonClick}
-          />
-
-          {isMobile && selectedElement && <details className="mobile-element-size" key={selectedElement.id}>
-            <summary>位置・サイズを数値で調整</summary>
-            <div>{(['x', 'y', 'width', 'height'] as const).map((field) => <label key={field}>
-              {{ x: '左から', y: '上から', width: '幅', height: '高さ' }[field]}
-              <input type="number" inputMode="numeric" min={field === 'x' || field === 'y' ? 0 : 40} value={selectedElement[field]} onChange={e => {
-                if (e.target.value === '') return
-                const value = Number(e.target.value)
-                if (!Number.isFinite(value)) return
-                const next = Math.max(field === 'x' || field === 'y' ? 0 : 40, Math.round(value))
-                const updated = { ...selectedElement, [field]: next, updatedAt: new Date().toISOString() }
-                if (selectedElement.type === 'image' && selectedElement.keepAspectRatio) {
-                  if (field === 'width') updated.height = Math.max(40, Math.round(next * selectedElement.height / selectedElement.width))
-                  if (field === 'height') updated.width = Math.max(40, Math.round(next * selectedElement.width / selectedElement.height))
-                }
-                handleUpdateElement(updated)
-              }} />
-            </label>)}</div>
-          </details>}
-          {/* 下部: ツールバー ([四角] [画像] [ボタン] 等) */}
-          <Toolbar
-            onAddRectangle={handleAddRectangle}
-            onAddImage={handleAddImage}
-            onAddButton={handleAddButton}
-            selectedElement={selectedElement}
-            onDeleteSelected={handleDeleteSelectedElement}
             onUpdateButtonLabel={handleUpdateButtonLabel}
-            onTriggerButtonAction={handleButtonClick}
-            targetPagePath={targetPagePath}
+            onDeleteElement={handleDeleteSelectedElement}
+            strokes={currentPage.strokes ?? []}
+            onAddStroke={handleAddStroke}
+            onRemoveStrokes={handleRemoveStrokes}
+            tool={drawTool}
           />
         </main>
 
-        {/* 右: ページ情報 (デスクトップ時は常時、モバイル時はドロワー) */}
-        {!isMobile ? (
+        {isMobile && <div className={'bh-backdrop' + (isPanelOpen ? ' is-open' : '')} onClick={() => setIsPanelOpen(false)} aria-hidden="true" />}
+        <aside
+          id="control-panel"
+          className={'bh-panel' + (isMobile ? ' is-drawer' : '') + (isMobile && isPanelOpen ? ' is-open' : '')}
+          aria-label="パネル"
+          inert={isMobile && !isPanelOpen}
+        >
+          {isMobile && <div className="bh-panel-head">
+            <strong>パネル</strong>
+            <button type="button" className="bh-btn bh-btn-small" onClick={() => setIsPanelOpen(false)} aria-label="パネルを閉じる"><X size={18} /></button>
+          </div>}
+          <Toolbar
+            onAddRectangle={withPanelClose(handleAddRectangle)}
+            onAddImage={withPanelClose(handleAddImage)}
+            onAddButton={withPanelClose(handleAddButton)}
+            onAddText={withPanelClose(handleAddText)}
+            onSaveSnapshot={withPanelClose(handleSaveSnapshot)}
+            onOpenSnapshots={withPanelClose(() => setActiveModal('snapshots'))}
+            onNewProject={withPanelClose(handleNewProject)}
+            onOpenSettings={withPanelClose(() => setActiveModal('settings'))}
+            tool={drawTool}
+            onChangeTool={withPanelClose((next: DrawTool) => { setDrawTool(next); if (next !== 'select') setSelectedElementId(null) })}
+          />
           <PageInfoPanel
             page={currentPage}
             isOnlyPage={projectState.pages.length <= 1}
-            onUpdateDisplayName={handleUpdateDisplayName}
-            onUpdateComment={handleUpdateComment}
             onRequestDeletePage={handleRequestDeletePage}
           />
-        ) : (
-          isInfoPanelOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(15, 23, 42, 0.35)',
-                zIndex: 45,
-                display: 'flex',
-                justifyContent: 'flex-end',
-              }}
-              onClick={() => setIsInfoPanelOpen(false)}
-            >
-              <div
-                className="drawer-right"
-                style={{
-                  height: '100%',
-                  boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
-                  backgroundColor: '#ffffff',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <PageInfoPanel
-                  page={currentPage}
-                  isOnlyPage={projectState.pages.length <= 1}
-                  onUpdateDisplayName={handleUpdateDisplayName}
-                  onUpdateComment={handleUpdateComment}
-                  onRequestDeletePage={handleRequestDeletePage}
-                  onClose={() => setIsInfoPanelOpen(false)}
-                />
-              </div>
-            </div>
-          )
-        )}
+          <PageListSidebar
+            pages={projectState.pages}
+            currentPageId={currentPage.id}
+            onSelectPage={handleSelectPage}
+            onAddRootPage={handleAddRootPage}
+          />
+        </aside>
       </div>
 
       {/* --- モーダル群 --- */}

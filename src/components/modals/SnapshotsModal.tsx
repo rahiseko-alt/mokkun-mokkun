@@ -20,7 +20,7 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
+        backgroundColor: 'rgba(17, 17, 17, 0.45)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -45,15 +45,15 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
               <AlertTriangle size={24} color="#f59e0b" />
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--bh-ink)' }}>
                 構成の復元確認
               </h3>
             </div>
 
-            <p style={{ fontSize: '14px', color: '#1e293b', marginBottom: '10px', lineHeight: '1.5' }}>
+            <p style={{ fontSize: '14px', color: 'var(--bh-ink)', marginBottom: '10px', lineHeight: '1.5' }}>
               <span style={{ fontWeight: 700 }}>{selectedSnapshotForConfirm.createdAt}</span> の構成に戻します。
             </p>
-            <p style={{ fontSize: '13px', color: '#dc2626', marginBottom: '24px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--bh-red)', marginBottom: '24px' }}>
               現在の未保存の変更は失われます。
             </p>
 
@@ -64,8 +64,8 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
                   padding: '8px 16px',
                   fontSize: '13px',
                   fontWeight: 500,
-                  color: '#475569',
-                  backgroundColor: '#f1f5f9',
+                  color: 'var(--bh-ink)',
+                  backgroundColor: 'var(--bh-paper-2)',
                   borderRadius: '6px',
                 }}
               >
@@ -82,7 +82,7 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
                   fontSize: '13px',
                   fontWeight: 600,
                   color: '#ffffff',
-                  backgroundColor: '#2563eb',
+                  backgroundColor: 'var(--bh-blue)',
                   borderRadius: '6px',
                 }}
               >
@@ -94,13 +94,13 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
           // スナップショット一覧
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <History size={20} color="#2563eb" />
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+              <History size={20} color="var(--bh-blue)" />
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--bh-ink)' }}>
                 保存した構成を見る
               </h3>
             </div>
 
-            <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--bh-muted)', marginBottom: '16px' }}>
               最新の3件まで保持されます。過去の構成に戻すことができます。
             </p>
 
@@ -109,10 +109,10 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
                 style={{
                   padding: '30px 20px',
                   textAlign: 'center',
-                  backgroundColor: '#f8fafc',
+                  backgroundColor: 'var(--bh-paper-2)',
                   borderRadius: '8px',
                   border: '1px dashed #cbd5e1',
-                  color: '#94a3b8',
+                  color: 'var(--bh-muted)',
                   fontSize: '13px',
                   marginBottom: '20px',
                 }}
@@ -129,16 +129,16 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '12px 14px',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: 'var(--bh-paper-2)',
                       borderRadius: '8px',
                       border: '1px solid #e2e8f0',
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--bh-ink)' }}>
                         {snap.createdAt}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--bh-muted)', marginTop: '2px' }}>
                         {idx === 0 ? '最新' : idx === 1 ? '1つ前' : '2つ前'} • ページ数: {snap.serializedProjectState.pages.length}
                       </div>
                     </div>
@@ -152,14 +152,14 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
                         padding: '6px 12px',
                         fontSize: '12px',
                         fontWeight: 600,
-                        color: '#2563eb',
-                        backgroundColor: '#eff6ff',
+                        color: 'var(--bh-blue)',
+                        backgroundColor: 'var(--bh-paper-2)',
                         borderRadius: '6px',
                         border: '1px solid #bfdbfe',
                         transition: 'background-color 0.15s',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#dbeafe')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#eff6ff')}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bh-paper-2)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bh-paper-2)')}
                     >
                       <RotateCcw size={13} />
                       <span>この状態に戻す</span>
@@ -176,8 +176,8 @@ export const SnapshotsModal: React.FC<SnapshotsModalProps> = ({
                   padding: '8px 18px',
                   fontSize: '13px',
                   fontWeight: 500,
-                  color: '#475569',
-                  backgroundColor: '#f1f5f9',
+                  color: 'var(--bh-ink)',
+                  backgroundColor: 'var(--bh-paper-2)',
                   borderRadius: '6px',
                 }}
               >

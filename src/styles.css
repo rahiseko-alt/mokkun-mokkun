@@ -1,0 +1,150 @@
+/* ===== レイアウト: 左に描画画面、右に操作パネル ===== */
+.bh-app { display: flex; flex-direction: column; width: 100vw; height: 100dvh; overflow: hidden; background: var(--bh-paper); }
+.bh-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--bh-panel-width); flex: 1; min-height: 0; }
+.bh-stage { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--bh-paper); }
+.bh-panel { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: var(--bh-paper); border-left: 4px solid var(--bh-ink); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+
+/* モバイル: 操作パネルは右からスライドイン/アウト */
+@media (max-width: 767px) {
+  .bh-workspace { grid-template-columns: minmax(0, 1fr); }
+  .bh-panel.is-drawer {
+    position: absolute; top: 0; right: 0; bottom: 0; z-index: 60;
+    width: min(var(--bh-panel-width), calc(100vw - 40px));
+    transform: translateX(100%); visibility: hidden;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.28s;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bh-panel.is-drawer.is-open { transform: translateX(0); visibility: visible; transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s; }
+  .bh-backdrop { position: absolute; inset: 0; z-index: 55; background: rgba(17, 17, 17, 0.4); opacity: 0; pointer-events: none; transition: opacity 0.28s; }
+  .bh-backdrop.is-open { opacity: 1; pointer-events: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bh-panel.is-drawer, .bh-panel.is-drawer.is-open, .bh-backdrop { transition: none; }
+}
+
+.bh-panel-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 10px 16px; background: var(--bh-ink); color: var(--bh-paper); }
+.bh-panel-head strong { font-size: 15px; letter-spacing: 0.08em; }
+.bh-panel-head .bh-btn { border-color: var(--bh-paper); background: var(--bh-ink); color: var(--bh-paper); }
+
+/* ===== パネル内セクション ===== */
+.bh-section { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-bottom: var(--bh-border); }
+.bh-section:last-child { border-bottom: 0; }
+.bh-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bh-section-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; letter-spacing: 0.12em; }
+.bh-mark { display: inline-block; flex-shrink: 0; width: 12px; height: 12px; }
+.bh-mark-red { background: var(--bh-red); border-radius: 50%; }
+.bh-mark-blue { background: var(--bh-blue); }
+.bh-mark-yellow { width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 12px solid var(--bh-yellow); }
+.bh-mark-ink { background: var(--bh-ink); }
+
+.bh-add-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.bh-add-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 72px; padding: 10px 4px; border: var(--bh-border); background: var(--bh-paper); font-size: 14px; font-weight: 800; text-align: center; transition: background-color 0.12s, color 0.12s; }
+.bh-add-button:hover { background: var(--bh-ink); color: var(--bh-paper); }
+.bh-add-button:active { background: var(--bh-red); border-color: var(--bh-red); color: var(--bh-paper); }
+
+
+.bh-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bh-field > span { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--bh-ink); }
+.bh-field > span small { margin-left: auto; color: var(--bh-muted); font-size: 10px; font-weight: 400; letter-spacing: 0; }
+.bh-field input, .bh-field textarea { width: 100%; min-height: 44px; padding: 8px 10px; border: var(--bh-border); border-radius: 0; background: var(--bh-paper); color: var(--bh-ink); font-size: 14px; }
+.bh-field textarea { line-height: 1.6; resize: vertical; }
+.bh-field input:focus, .bh-field textarea:focus { box-shadow: 4px 4px 0 var(--bh-yellow); }
+.bh-readonly { padding: 10px 12px; border: var(--bh-border); background: var(--bh-paper-2); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.bh-identifier { padding: 8px 12px; border: var(--bh-border); background: var(--bh-ink); color: var(--bh-paper); font-size: 18px; font-weight: 800; letter-spacing: 0.06em; }
+
+
+.bh-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 8px 14px; border: var(--bh-border); background: var(--bh-paper); color: var(--bh-ink); font-size: 13px; font-weight: 700; transition: background-color 0.12s, color 0.12s; }
+.bh-btn:hover { background: var(--bh-ink); color: var(--bh-paper); }
+.bh-btn-small { min-height: 36px; padding: 4px 10px; font-size: 12px; }
+.bh-delete { border-color: var(--bh-red); color: var(--bh-red); }
+.bh-delete:hover { background: var(--bh-red); color: var(--bh-paper); }
+
+.bh-page-tree { margin: 0 -16px; }
+.bh-page-tree ul { margin: 0; }
+.bh-page-item { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 6px 16px 6px 10px; border-left: 6px solid transparent; font-size: 13px; text-align: left; }
+.bh-page-item:hover { background: var(--bh-paper-2); }
+.bh-page-item.is-current { border-left-color: var(--bh-red); background: var(--bh-ink); color: var(--bh-paper); font-weight: 700; }
+.bh-page-id { flex-shrink: 0; padding: 1px 6px; border: 1.5px solid currentColor; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; }
+.bh-page-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===== ヘッダー ===== */
+.mc-header { position: relative; flex-shrink: 0; z-index: 70; padding: 8px 16px; background: var(--bh-paper); border-bottom: 4px solid var(--bh-ink); }
+.mc-header-main, .mc-header-actions, .mc-desktop-actions, .mc-name-edit { display: flex; align-items: center; gap: 8px; }
+.mc-header-main { justify-content: space-between; min-height: 44px; }
+.mc-project { min-width: 0; flex: 1; }
+.mc-project-name { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0; max-width: 100%; font-size: 17px; font-weight: 800; letter-spacing: 0.04em; }
+.mc-project-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mc-project-name svg { flex-shrink: 0; }
+.mc-control { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 8px 12px; border: var(--bh-border); background: var(--bh-paper); color: var(--bh-ink); font-size: 13px; font-weight: 700; white-space: nowrap; transition: background-color 0.12s, color 0.12s; }
+.mc-control:hover { background: var(--bh-ink); color: var(--bh-paper); }
+.mc-control svg { flex-shrink: 0; }
+.mc-panel-toggle { background: var(--bh-ink); color: var(--bh-paper); }
+.mc-panel-toggle[aria-expanded='true'] { background: var(--bh-blue); border-color: var(--bh-blue); }
+.mc-name-edit input { min-width: 0; width: min(220px, 100%); min-height: 44px; padding: 8px; border: var(--bh-border); font-size: 16px; }
+@media (max-width: 767px) {
+  .mc-header { padding: 6px 10px; }
+  .mc-header-actions { gap: 6px; }
+  .mc-project-name { max-width: 100%; font-size: 14px; }
+      .mc-name-edit { gap: 4px; }
+  .mc-name-edit input { width: 100%; }
+}
+
+/* ===== 描画画面まわり ===== */
+.canvas-region { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
+.mobile-page-location { display: flex; flex-shrink: 0; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bh-paper); border-bottom: var(--bh-border); }
+.mobile-page-location button { flex-shrink: 0; min-height: 40px; padding: 0 10px; border: var(--bh-border); font-size: 13px; font-weight: 700; }
+.mobile-page-location > div { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 0; }
+.mobile-page-location span { max-width: 90px; padding: 3px 8px; background: var(--bh-ink); color: var(--bh-paper); font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
+.mobile-page-location strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.mobile-page-location small { flex-shrink: 0; color: var(--bh-muted); font-size: 10px; }
+
+/* ===== モーダル (インライン指定を Bauhaus の形に揃える) ===== */
+.modal-content { max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); border: 3px solid var(--bh-ink); border-radius: 0 !important; box-shadow: 8px 8px 0 var(--bh-ink) !important; animation: fadeIn 0.15s ease-out; }
+.modal-content *, .modal-content button, .modal-content input, .modal-content textarea { border-radius: 0 !important; }
+.modal-content input, .modal-content textarea, .modal-content select { border: var(--bh-border) !important; }
+.modal-content button { border: var(--bh-border) !important; font-weight: 700 !important; }
+@media (max-width: 767px) {
+  .modal-content { max-height: calc(100dvh - 32px); overflow-y: auto; }
+  .modal-content button { min-height: 44px; }
+  .modal-content input, .modal-content textarea, .bh-panel input, .bh-panel textarea { font-size: 16px !important; }
+}
+
+/* 描画画面のボタン: 子ページ作成/移動のタブはボタンの下に置き、ドラッグ操作と分ける */
+@media (max-width: 767px) { 
+/* テキスト要素: 背景は透明。範囲が分かるよう編集時だけ点線を出す */
+.canvas-text { position: absolute; box-sizing: border-box; padding: 2px 4px; border: 1px dashed rgba(17, 17, 17, 0.25); background: transparent; color: var(--bh-ink); line-height: 1.4; font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; cursor: move; touch-action: none; }
+.canvas-text.is-selected { overflow: visible; border: 2px solid var(--bh-blue); }
+.canvas-text > span { display: block; overflow: hidden; height: 100%; }
+
+/* 子ページ作成/移動のマーク: ボタン本体より目立たない、細い黒の破線の丸 */
+.canvas-link-tab { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; background: transparent; color: var(--bh-ink); cursor: pointer; }
+.canvas-link-mark { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1px dashed var(--bh-ink); border-radius: 50%; opacity: 0.7; }
+.canvas-link-tab:hover .canvas-link-mark { opacity: 1; }
+@media (max-width: 767px) { .canvas-link-tab { width: 36px; height: 36px; } }
+.canvas-text-input { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; resize: none; outline: none; }
+
+/* プロジェクト操作 (保存・保存一覧・新規作成・設定) */
+.bh-project-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bh-save { background: var(--bh-red); border-color: var(--bh-red); color: var(--bh-paper); }
+.bh-save:hover { background: var(--bh-ink); border-color: var(--bh-ink); }
+
+/* 選択中の要素の削除ボタン (右上) */
+.canvas-delete { position: absolute; top: -30px; right: -2px; z-index: 31; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; border: 2px solid var(--bh-ink); background: var(--bh-paper); color: var(--bh-ink); cursor: pointer; }
+.canvas-delete:hover { background: var(--bh-red); border-color: var(--bh-red); color: var(--bh-paper); }
+@media (max-width: 767px) { .canvas-delete { top: -40px; width: 32px; height: 32px; } }
+.canvas-label-input { width: 100%; min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: center; outline: none; }
+
+/* 鉛筆レイヤー */
+.canvas-draw-layer { position: absolute; top: 0; left: 0; z-index: 40; overflow: visible; pointer-events: none; }
+.canvas-draw-layer path { fill: none; stroke: var(--bh-ink); stroke-linecap: round; stroke-linejoin: round; }
+.canvas-draw-layer.is-active { pointer-events: auto; touch-action: none; }
+.canvas-draw-layer.is-pen { cursor: crosshair; }
+.canvas-draw-layer.is-eraser { cursor: cell; }
+
+
+/* パネルの各セクションは縮めず、はみ出た分はパネル自体をスクロールさせる */
+.bh-panel > * { flex-shrink: 0; }
+.bh-tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bh-tools .bh-btn { padding-inline: 6px; }
+.bh-tools .bh-btn[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }
+

@@ -45,3 +45,6 @@ export const STORAGE_KEY_SNAPSHOTS = 'ui_mock_snapshots_v1'
 
 export const IDENTIFIER_GUIDE_TEXT =
   '識別子は、声に出して区別しやすい文字・単語を推奨します。同じ読み方の文字や、色・位置・サイズ等のUI属性と混同する単語は避けてください。'
+
+// テキスト要素の初期文字サイズ (枠のリサイズで拡大縮小する)
+export const TEXT_DEFAULT_FONT_SIZE = 18

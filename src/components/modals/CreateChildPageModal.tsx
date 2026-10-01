@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 interface CreateChildPageModalProps {
   buttonLabel: string
   parentPath: string
   nextPath: string | null
-  onConfirm: (displayName: string) => void
+  onConfirm: () => void
   onCancel: () => void
 }
 
@@ -15,14 +15,12 @@ export const CreateChildPageModal: React.FC<CreateChildPageModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  const [displayName, setDisplayName] = useState(buttonLabel || '新規ページ')
-
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
+        backgroundColor: 'rgba(17, 17, 17, 0.45)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -42,38 +40,16 @@ export const CreateChildPageModal: React.FC<CreateChildPageModalProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--bh-ink)', marginBottom: '12px' }}>
           このボタンのページを作成しますか？
         </h3>
 
-        <div style={{ fontSize: '13px', color: '#475569', marginBottom: '16px', lineHeight: '1.6' }}>
-          <div>親ページ: <span style={{ fontWeight: 600, color: '#1e293b' }}>{parentPath}</span></div>
+        <div style={{ fontSize: '13px', color: 'var(--bh-ink)', marginBottom: '20px', lineHeight: '1.6' }}>
+          <div>ページ名: <span style={{ fontWeight: 600 }}>{buttonLabel || '新規ページ'}</span>（ボタン名と同じ）</div>
+          <div>親ページ: <span style={{ fontWeight: 600, color: 'var(--bh-ink)' }}>{parentPath}</span></div>
           {nextPath && (
-            <div>作成予定の識別子: <span style={{ fontWeight: 700, color: '#2563eb' }}>{nextPath}</span></div>
+            <div>作成予定の識別子: <span style={{ fontWeight: 700, color: 'var(--bh-blue)' }}>{nextPath}</span></div>
           )}
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>
-            新しいページの表示名
-          </label>
-          <input
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') onConfirm(displayName.trim() || '新規ページ')
-              if (e.key === 'Escape') onCancel()
-            }}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              fontSize: '14px',
-              borderRadius: '6px',
-              border: '1px solid #cbd5e1',
-            }}
-          />
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -83,21 +59,22 @@ export const CreateChildPageModal: React.FC<CreateChildPageModalProps> = ({
               padding: '8px 16px',
               fontSize: '13px',
               fontWeight: 500,
-              color: '#475569',
-              backgroundColor: '#f1f5f9',
+              color: 'var(--bh-ink)',
+              backgroundColor: 'var(--bh-paper-2)',
               borderRadius: '6px',
             }}
           >
             キャンセル
           </button>
           <button
-            onClick={() => onConfirm(displayName.trim() || '新規ページ')}
+            onClick={onConfirm}
+            autoFocus
             style={{
               padding: '8px 16px',
               fontSize: '13px',
               fontWeight: 600,
               color: '#ffffff',
-              backgroundColor: '#2563eb',
+              backgroundColor: 'var(--bh-blue)',
               borderRadius: '6px',
             }}
           >

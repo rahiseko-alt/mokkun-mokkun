@@ -22,7 +22,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
+        backgroundColor: 'rgba(17, 17, 17, 0.45)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -44,21 +44,21 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           <AlertTriangle size={24} color="#dc2626" />
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--bh-ink)' }}>
             ページの削除確認
           </h3>
         </div>
 
         {hasChildren ? (
           <div>
-            <p style={{ fontSize: '14px', color: '#334155', marginBottom: '12px', fontWeight: 500 }}>
+            <p style={{ fontSize: '14px', color: 'var(--bh-ink)', marginBottom: '12px', fontWeight: 500 }}>
               このページを削除すると、以下のページもすべて削除されます。
             </p>
             <div
               style={{
                 maxHeight: '180px',
                 overflowY: 'auto',
-                backgroundColor: '#f8fafc',
+                backgroundColor: 'var(--bh-paper-2)',
                 border: '1px solid #e2e8f0',
                 borderRadius: '6px',
                 padding: '10px 14px',
@@ -71,23 +71,23 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                   style={{
                     fontSize: '13px',
                     padding: '3px 0',
-                    color: '#1e293b',
+                    color: 'var(--bh-ink)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                   }}
                 >
-                  <span style={{ fontWeight: 700, color: '#dc2626' }}>{p.identifierPath}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--bh-red)' }}>{p.identifierPath}</span>
                   {p.displayName && (
-                    <span style={{ color: '#64748b' }}>（{p.displayName}）</span>
+                    <span style={{ color: 'var(--bh-muted)' }}>（{p.displayName}）</span>
                   )}
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <p style={{ fontSize: '15px', color: '#1e293b', marginBottom: '24px', lineHeight: '1.5' }}>
-            <span style={{ fontWeight: 700, color: '#dc2626' }}>
+          <p style={{ fontSize: '15px', color: 'var(--bh-ink)', marginBottom: '24px', lineHeight: '1.5' }}>
+            <span style={{ fontWeight: 700, color: 'var(--bh-red)' }}>
               {pageToDelete.identifierPath}
             </span>
             {pageToDelete.displayName && `（${pageToDelete.displayName}）`} を削除しますか？
@@ -101,8 +101,8 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               padding: '8px 16px',
               fontSize: '13px',
               fontWeight: 500,
-              color: '#475569',
-              backgroundColor: '#f1f5f9',
+              color: 'var(--bh-ink)',
+              backgroundColor: 'var(--bh-paper-2)',
               borderRadius: '6px',
             }}
           >
@@ -115,7 +115,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               fontSize: '13px',
               fontWeight: 600,
               color: '#ffffff',
-              backgroundColor: '#dc2626',
+              backgroundColor: 'var(--bh-red)',
               borderRadius: '6px',
             }}
           >

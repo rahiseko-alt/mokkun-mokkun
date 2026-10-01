@@ -1,4 +1,4 @@
-export type ElementType = 'rectangle' | 'image' | 'button'
+export type ElementType = 'rectangle' | 'image' | 'button' | 'text'
 
 export interface BaseElement {
   id: string
@@ -34,7 +34,22 @@ export interface ButtonElement extends BaseElement {
   targetPageId: string | null
 }
 
-export type CanvasElement = RectangleElement | ImageElement | ButtonElement
+export interface TextElement extends BaseElement {
+  type: 'text'
+  text: string
+  fontSize: number // px
+}
+
+export type CanvasElement = RectangleElement | ImageElement | ButtonElement | TextElement
+
+// 鉛筆で描いた1本の線 (座標は描画画面上の px)
+export interface Stroke {
+  id: string
+  points: number[] // [x0, y0, x1, y1, ...]
+  width: number
+}
+
+export type DrawTool = 'select' | 'pen' | 'eraser'
 
 export interface IdentifierSet {
   id: string
@@ -54,6 +69,8 @@ export interface Page {
   order: number
   comment: string
   elements: CanvasElement[]
+  strokes?: Stroke[] // 鉛筆の手書き線
+
   createdAt: string
   updatedAt: string
 }
