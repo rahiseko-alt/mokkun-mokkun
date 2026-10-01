@@ -39,19 +39,21 @@ describe('Mobile editing workflow', () => {
     expect(screen.queryByTitle('顧客詳細')).not.toBeInTheDocument()
   })
 
-  it('updates dimensions numerically and retains them after remounting', () => {
+  it('adds a transparent text element whose content and size persist after remounting', () => {
     const view = render(<App />)
+    expect(screen.queryByRole('button', { name: '拡大' })).not.toBeInTheDocument()
     openPanel()
-    fireEvent.click(screen.getByRole('button', { name: /四角.*領域を作る/ }))
+    fireEvent.click(screen.getByRole('button', { name: /テキスト.*文字を置く/ }))
     openPanel()
-    fireEvent.click(screen.getByText('位置・サイズを数値で調整'))
-    fireEvent.change(screen.getByRole('spinbutton', { name: '幅' }), { target: { value: '280' } })
+    expect(screen.queryByText('位置・サイズを数値で調整')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByRole('textbox', { name: 'テキスト' }), { target: { value: '会員登録はこちら' } })
+    fireEvent.click(screen.getByRole('button', { name: '大' }))
     view.unmount()
-    render(<App />)
-    fireEvent.pointerDown(screen.getByText('赤'), { button: 0, pointerId: 1, clientX: 80, clientY: 80 })
-    openPanel()
-    fireEvent.click(screen.getByText('位置・サイズを数値で調整'))
-    expect(screen.getByRole('spinbutton', { name: '幅' })).toHaveValue(280)
+    const { container } = render(<App />)
+    const text = container.querySelector('.canvas-text') as HTMLElement
+    expect(text).toHaveTextContent('会員登録はこちら')
+    expect(text.style.fontSize).toBe('26px')
+    expect(text.style.backgroundColor).toBe('')
   })
 
   it('slides the control panel in and out and saves a restorable snapshot', () => {

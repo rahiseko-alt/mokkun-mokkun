@@ -37,7 +37,7 @@
 .bh-mark-yellow { width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 12px solid var(--bh-yellow); }
 .bh-mark-ink { background: var(--bh-ink); }
 
-.bh-add-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bh-add-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .bh-add-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 84px; padding: 10px 4px; border: var(--bh-border); background: var(--bh-paper); font-size: 14px; font-weight: 800; text-align: center; transition: background-color 0.12s, color 0.12s; }
 .bh-add-button small { display: block; margin-top: 2px; color: var(--bh-muted); font-size: 10px; font-weight: 400; white-space: nowrap; }
 .bh-add-button:hover { background: var(--bh-ink); color: var(--bh-paper); }
@@ -57,8 +57,6 @@
 .bh-readonly { padding: 10px 12px; border: var(--bh-border); background: var(--bh-paper-2); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .bh-identifier { padding: 8px 12px; border: var(--bh-border); background: var(--bh-ink); color: var(--bh-paper); font-size: 18px; font-weight: 800; letter-spacing: 0.06em; }
 
-.bh-size summary { min-height: 44px; display: flex; align-items: center; font-size: 12px; font-weight: 700; cursor: pointer; }
-.bh-size-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 
 .bh-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 8px 14px; border: var(--bh-border); background: var(--bh-paper); color: var(--bh-ink); font-size: 13px; font-weight: 700; transition: background-color 0.12s, color 0.12s; }
 .bh-btn:hover { background: var(--bh-ink); color: var(--bh-paper); }
@@ -119,9 +117,6 @@
 .canvas-empty-icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 50%; background: var(--bh-red); color: var(--bh-paper); font-size: 28px; font-weight: 700; }
 .canvas-empty strong { display: block; margin-bottom: 10px; color: var(--bh-ink); font-size: 18px; font-weight: 800; letter-spacing: 0.04em; }
 .canvas-empty p { font-size: 14px; line-height: 1.8; }
-.canvas-view-controls { display: flex; flex-shrink: 0; align-items: center; gap: 6px; padding: 4px 10px; border-bottom: var(--bh-border); background: var(--bh-paper); }
-.canvas-view-controls span { margin-right: auto; font-size: 12px; font-weight: 700; }
-.canvas-view-controls button { min-width: 44px; min-height: 40px; padding: 0 8px; border: var(--bh-border); font-size: 13px; font-weight: 700; }
 .mobile-page-location { display: flex; flex-shrink: 0; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bh-paper); border-bottom: var(--bh-border); }
 .mobile-page-location button { flex-shrink: 0; min-height: 40px; padding: 0 10px; border: var(--bh-border); font-size: 13px; font-weight: 700; }
 .mobile-page-location > div { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 0; }
@@ -144,3 +139,12 @@
 .canvas-link-tab { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: var(--bh-border); background: var(--bh-yellow); color: var(--bh-ink); cursor: pointer; }
 .canvas-link-tab.is-linked { background: var(--bh-blue); border-color: var(--bh-blue); color: var(--bh-paper); }
 @media (max-width: 767px) { .canvas-link-tab { width: 40px; height: 40px; } }
+
+/* テキスト要素: 背景は透明。範囲が分かるよう編集時だけ点線を出す */
+.canvas-text { position: absolute; box-sizing: border-box; padding: 2px 4px; border: 1px dashed rgba(17, 17, 17, 0.25); background: transparent; color: var(--bh-ink); line-height: 1.4; font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; cursor: move; touch-action: none; }
+.canvas-text.is-selected { overflow: visible; border: 2px solid var(--bh-blue); }
+.canvas-text > span { display: block; overflow: hidden; height: 100%; }
+.bh-segment { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bh-segment button { min-height: 44px; border: var(--bh-border); margin-left: -2px; font-weight: 700; }
+.bh-segment button:first-child { margin-left: 0; }
+.bh-segment button[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }

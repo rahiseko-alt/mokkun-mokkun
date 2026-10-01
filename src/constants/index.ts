@@ -45,3 +45,10 @@ export const STORAGE_KEY_SNAPSHOTS = 'ui_mock_snapshots_v1'
 
 export const IDENTIFIER_GUIDE_TEXT =
   '識別子は、声に出して区別しやすい文字・単語を推奨します。同じ読み方の文字や、色・位置・サイズ等のUI属性と混同する単語は避けてください。'
+
+// テキスト要素の文字サイズ (3段階のみ)
+export const TEXT_FONT_SIZES = [
+  { label: '小', size: 13 },
+  { label: '中', size: 18 },
+  { label: '大', size: 26 },
+] as const

@@ -3,6 +3,7 @@ import {
   ProjectState,
   CanvasElement,
   ButtonElement,
+  TextElement,
   RectangleElement,
   ImageElement,
   Snapshot,
@@ -27,6 +28,7 @@ import {
   loadSnapshotsFromStorage,
   saveSnapshotsToStorage,
 } from './services/storageService'
+import { TEXT_FONT_SIZES } from './constants'
 import { Header } from './components/Header'
 import { PageListSidebar } from './components/PageListSidebar'
 import { PageInfoPanel } from './components/PageInfoPanel'
@@ -335,6 +337,34 @@ export function App() {
     setSelectedElementId(newBtn.id)
   }
 
+  // テキストの追加 (背景透明・枠のリサイズで折り返し幅を調整)
+  const handleAddText = () => {
+    const newText: TextElement = {
+      id: generateUUID(),
+      pageId: currentPage.id,
+      type: 'text',
+      text: 'テキスト',
+      fontSize: TEXT_FONT_SIZES[1].size,
+      x: 80 + (currentElements.length % 8) * 20,
+      y: 80 + (currentElements.length % 8) * 20,
+      width: 200,
+      height: 48,
+      zIndex: currentElements.length + 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    setProjectState((prev) => ({
+      ...prev,
+      pages: prev.pages.map((p) =>
+        p.id === currentPage.id
+          ? { ...p, elements: [...p.elements, newText] }
+          : p
+      ),
+    }))
+    setSelectedElementId(newText.id)
+  }
+
   // 選択中要素の更新 (移動・リサイズ)
   const handleUpdateElement = useCallback((updated: CanvasElement) => {
     setProjectState((prev) => ({
@@ -542,6 +572,7 @@ export function App() {
             onAddRectangle={withPanelClose(handleAddRectangle)}
             onAddImage={withPanelClose(handleAddImage)}
             onAddButton={withPanelClose(handleAddButton)}
+            onAddText={withPanelClose(handleAddText)}
             selectedElement={selectedElement}
             onDeleteSelected={handleDeleteSelectedElement}
             onUpdateElement={handleUpdateElement}

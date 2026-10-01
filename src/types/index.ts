@@ -1,4 +1,4 @@
-export type ElementType = 'rectangle' | 'image' | 'button'
+export type ElementType = 'rectangle' | 'image' | 'button' | 'text'
 
 export interface BaseElement {
   id: string
@@ -34,7 +34,13 @@ export interface ButtonElement extends BaseElement {
   targetPageId: string | null
 }
 
-export type CanvasElement = RectangleElement | ImageElement | ButtonElement
+export interface TextElement extends BaseElement {
+  type: 'text'
+  text: string
+  fontSize: number // px
+}
+
+export type CanvasElement = RectangleElement | ImageElement | ButtonElement | TextElement
 
 export interface IdentifierSet {
   id: string

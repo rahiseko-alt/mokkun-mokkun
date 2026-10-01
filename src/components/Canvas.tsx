@@ -4,6 +4,7 @@ import {
   RectangleElement,
   ImageElement,
   ButtonElement,
+  TextElement,
 } from '../types'
 import { MIN_ELEMENT_WIDTH, MIN_ELEMENT_HEIGHT } from '../constants'
 import { ArrowRight, Plus } from 'lucide-react'
@@ -38,11 +39,10 @@ export const Canvas: React.FC<CanvasProps> = ({
 
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const [viewportWidth, setViewportWidth] = useState(360)
-  const [zoom, setZoom] = useState(1)
   const dragScale = useRef(1)
   const sceneWidth = isMobile ? Math.max(360, ...elements.map(el => el.x + el.width + 32)) : 1400
   const sceneHeight = Math.max(isMobile ? 560 : 1000, ...elements.map(el => el.y + el.height + 32))
-  const scale = isMobile ? Math.min(1, viewportWidth / sceneWidth) * zoom : 1
+  const scale = isMobile ? Math.min(1, viewportWidth / sceneWidth) : 1
 
   useEffect(() => {
     if (!canvasRef.current || typeof ResizeObserver === 'undefined') return
@@ -231,12 +231,6 @@ export const Canvas: React.FC<CanvasProps> = ({
 
   return (
     <div className="canvas-region">
-      {isMobile && <div className="canvas-view-controls" aria-label="キャンバスの表示">
-        <span>表示 {Math.round(scale * 100)}%</span>
-        <button onClick={() => setZoom(z => Math.max(0.5, z - 0.25))} aria-label="縮小">−</button>
-        <button onClick={() => setZoom(z => Math.min(3, z + 0.25))} aria-label="拡大">＋</button>
-        <button onClick={() => { setZoom(1); canvasRef.current?.scrollTo?.(0, 0) }}>幅に合わせる</button>
-      </div>}
     <div
       ref={canvasRef}
       onClick={handleCanvasClick}
@@ -261,7 +255,7 @@ export const Canvas: React.FC<CanvasProps> = ({
         {elements.length === 0 && <div className="canvas-empty">
           <span className="canvas-empty-icon">＋</span>
           <strong>ここに画面をつくりましょう</strong>
-          <p>{isMobile ? '右上の「操作」' : '右の操作パネル'}の「四角」で領域を配置。<br />「ボタン」から次のページをつくれます。</p>
+          <p>{isMobile ? '右上の「操作」' : '右の操作パネル'}の「四角」「テキスト」で配置。<br />「ボタン」から次のページをつくれます。</p>
         </div>}
         {elements.map((el) => {
           const isSelected = el.id === selectedElementId
@@ -421,6 +415,29 @@ export const Canvas: React.FC<CanvasProps> = ({
                 </button>
 
                 {isSelected && renderResizeHandles(btn)}
+              </div>
+            )
+          }
+
+          // 4. テキスト要素 (背景透明)
+          if (el.type === 'text') {
+            const txt = el as TextElement
+            return (
+              <div
+                key={txt.id}
+                className={'canvas-text' + (isSelected ? ' is-selected' : '')}
+                onPointerDown={(e) => handlePointerDown(e, txt, 'move')}
+                style={{
+                  left: `${txt.x}px`,
+                  top: `${txt.y}px`,
+                  width: `${txt.width}px`,
+                  height: `${txt.height}px`,
+                  fontSize: `${txt.fontSize}px`,
+                  zIndex: isSelected ? 20 : txt.zIndex,
+                }}
+              >
+                <span>{txt.text || ' '}</span>
+                {isSelected && renderResizeHandles(txt)}
               </div>
             )
           }

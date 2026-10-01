@@ -1,11 +1,13 @@
 import React, { useRef } from 'react'
-import { Square, Image as ImageIcon, MousePointerClick, Trash2, ArrowUpRight } from 'lucide-react'
-import { CanvasElement, ButtonElement, RectangleElement, ImageElement } from '../types'
+import { Square, Image as ImageIcon, MousePointerClick, Type, Trash2, ArrowUpRight } from 'lucide-react'
+import { CanvasElement, ButtonElement, RectangleElement, ImageElement, TextElement } from '../types'
+import { TEXT_FONT_SIZES } from '../constants'
 
 interface ToolbarProps {
   onAddRectangle: () => void
   onAddImage: (file: File) => void
   onAddButton: () => void
+  onAddText: () => void
   selectedElement: CanvasElement | null
   onDeleteSelected: () => void
   onUpdateElement: (element: CanvasElement) => void
@@ -14,15 +16,8 @@ interface ToolbarProps {
   targetPagePath?: string | null
 }
 
-const SIZE_FIELDS = [
-  { key: 'x', label: '左から', min: 0 },
-  { key: 'y', label: '上から', min: 0 },
-  { key: 'width', label: '幅', min: 40 },
-  { key: 'height', label: '高さ', min: 40 },
-] as const
-
 export const Toolbar: React.FC<ToolbarProps> = ({
-  onAddRectangle, onAddImage, onAddButton, selectedElement, onDeleteSelected,
+  onAddRectangle, onAddImage, onAddButton, onAddText, selectedElement, onDeleteSelected,
   onUpdateElement, onUpdateButtonLabel, onTriggerButtonAction, targetPagePath,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -31,19 +26,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     if (file) onAddImage(file)
     e.target.value = ''
   }
-  const handleSizeChange = (field: typeof SIZE_FIELDS[number], raw: string) => {
-    if (!selectedElement || raw === '') return
-    const value = Number(raw)
-    if (!Number.isFinite(value)) return
-    const next = Math.max(field.min, Math.round(value))
-    const updated = { ...selectedElement, [field.key]: next, updatedAt: new Date().toISOString() }
-    if (selectedElement.type === 'image' && selectedElement.keepAspectRatio) {
-      if (field.key === 'width') updated.height = Math.max(40, Math.round(next * selectedElement.height / selectedElement.width))
-      if (field.key === 'height') updated.width = Math.max(40, Math.round(next * selectedElement.width / selectedElement.height))
-    }
-    onUpdateElement(updated)
+  const updateText = (patch: Partial<TextElement>) => {
+    if (selectedElement?.type !== 'text') return
+    onUpdateElement({ ...selectedElement, ...patch, updatedAt: new Date().toISOString() })
   }
   const button = selectedElement?.type === 'button' ? selectedElement as ButtonElement : null
+  const textEl = selectedElement?.type === 'text' ? selectedElement as TextElement : null
   return (
     <>
       <section className="bh-section">
@@ -53,6 +41,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <button type="button" className="bh-add-button" onClick={() => fileInputRef.current?.click()} title="画像を追加"><ImageIcon size={22} /><span>画像<small>参考を置く</small></span></button>
           <input ref={fileInputRef} type="file" accept="image/*" aria-label="追加する画像" style={{ display: 'none' }} onChange={handleFileChange} />
           <button type="button" className="bh-add-button" onClick={onAddButton} title="ボタンを追加"><MousePointerClick size={22} /><span>ボタン<small>画面をつなぐ</small></span></button>
+          <button type="button" className="bh-add-button" onClick={onAddText} title="テキストを追加"><Type size={22} /><span>テキスト<small>文字を置く</small></span></button>
         </div>
       </section>
       <section className="bh-section">
@@ -65,13 +54,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               <label className="bh-field"><span>ボタン名</span><input type="text" value={button.label} onChange={(e) => onUpdateButtonLabel?.(e.target.value)} placeholder="ボタン名" /></label>
               <button type="button" className={'bh-btn bh-link-action' + (button.targetPageId ? ' is-linked' : '')} onClick={() => onTriggerButtonAction?.(button)}><ArrowUpRight size={18} /><span>{button.targetPageId ? `移動 (${targetPagePath || '開く'})` : '子ページ作成'}</span></button>
             </>}
-            <details className="bh-size">
-              <summary>位置・サイズを数値で調整</summary>
-              <div className="bh-size-grid">{SIZE_FIELDS.map((field) => <label key={field.key} className="bh-field">
-                <span>{field.label}</span>
-                <input type="number" inputMode="numeric" min={field.min} value={selectedElement[field.key]} onChange={(e) => handleSizeChange(field, e.target.value)} />
-              </label>)}</div>
-            </details>
+            {textEl && <>
+              <label className="bh-field"><span>テキスト</span><textarea value={textEl.text} rows={3} onChange={(e) => updateText({ text: e.target.value })} placeholder="表示する文字" /></label>
+              <div className="bh-field">
+                <span>文字サイズ</span>
+                <div className="bh-segment" role="group" aria-label="文字サイズ">{TEXT_FONT_SIZES.map((f) => (
+                  <button key={f.label} type="button" aria-pressed={textEl.fontSize === f.size} onClick={() => updateText({ fontSize: f.size })}>{f.label}</button>
+                ))}</div>
+              </div>
+              <p className="bh-hint">枠の角をドラッグすると、文字を置く範囲を変えられます。</p>
+            </>}
             <button type="button" className="bh-btn bh-delete" onClick={onDeleteSelected} title="選択中の要素を削除"><Trash2 size={18} /><span>削除</span></button>
           </div>
         ) : <p className="bh-hint">描画画面の要素をタップして選択。ドラッグで移動できます。</p>}
