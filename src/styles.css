@@ -54,6 +54,7 @@
 .bh-field input, .bh-field textarea { width: 100%; min-height: 44px; padding: 8px 10px; border: var(--bh-border); border-radius: 0; background: var(--bh-paper); color: var(--bh-ink); font-size: 14px; }
 .bh-field textarea { line-height: 1.6; resize: vertical; }
 .bh-field input:focus, .bh-field textarea:focus { box-shadow: 4px 4px 0 var(--bh-yellow); }
+.bh-readonly { padding: 10px 12px; border: var(--bh-border); background: var(--bh-paper-2); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .bh-identifier { padding: 8px 12px; border: var(--bh-border); background: var(--bh-ink); color: var(--bh-paper); font-size: 18px; font-weight: 800; letter-spacing: 0.06em; }
 
 .bh-size summary { min-height: 44px; display: flex; align-items: center; font-size: 12px; font-weight: 700; cursor: pointer; }
@@ -138,3 +139,8 @@
   .modal-content button { min-height: 44px; }
   .modal-content input, .modal-content textarea, .bh-panel input, .bh-panel textarea { font-size: 16px !important; }
 }
+
+/* 描画画面のボタン: 子ページ作成/移動のタブはボタンの下に置き、ドラッグ操作と分ける */
+.canvas-link-tab { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: var(--bh-border); background: var(--bh-yellow); color: var(--bh-ink); cursor: pointer; }
+.canvas-link-tab.is-linked { background: var(--bh-blue); border-color: var(--bh-blue); color: var(--bh-paper); }
+@media (max-width: 767px) { .canvas-link-tab { width: 40px; height: 40px; } }

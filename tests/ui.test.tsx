@@ -30,7 +30,8 @@ describe('UI Mock App Component Tests', () => {
 
     // 右パネル
     expect(screen.getByText('ページ識別子')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('例: 顧客詳細')).toBeInTheDocument()
+    expect(screen.getByText('ボタン名から自動')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('例: 顧客詳細')).not.toBeInTheDocument()
   })
 
   it('四角の追加: 薄い色が割り当てられ、色名バッジが表示される', () => {

@@ -193,18 +193,6 @@ export function App() {
     }
   }
 
-  // ページ表示名の更新
-  const handleUpdateDisplayName = (displayName: string) => {
-    setProjectState((prev) => ({
-      ...prev,
-      pages: prev.pages.map((p) =>
-        p.id === prev.currentPageId
-          ? { ...p, displayName, updatedAt: new Date().toISOString() }
-          : p
-      ),
-    }))
-  }
-
   // ページコメントの更新 (13.2)
   const handleUpdateComment = (comment: string) => {
     setProjectState((prev) => ({
@@ -383,11 +371,18 @@ export function App() {
   }
 
   // 選択中ボタンのラベル変更 (11.1, T-007)
+  // 遷移先ページがあれば、そのページ名もボタン名に揃える
   const handleUpdateButtonLabel = (label: string) => {
     if (!selectedElementId) return
+    const targetPageId = currentElements.find(
+      (el): el is ButtonElement => el.id === selectedElementId && el.type === 'button'
+    )?.targetPageId
     setProjectState((prev) => ({
       ...prev,
       pages: prev.pages.map((p) => {
+        if (targetPageId && p.id === targetPageId) {
+          return { ...p, displayName: label.trim() || '新規ページ', updatedAt: new Date().toISOString() }
+        }
         if (p.id === currentPage.id) {
           return {
             ...p,
@@ -435,13 +430,15 @@ export function App() {
   }
 
   // 子ページ作成の確定 (12.1-12.3)
-  const handleConfirmCreateChildPage = (displayName: string) => {
+  // ページ名はユーザーに決めさせず、ボタン名をそのまま使う
+  const handleConfirmCreateChildPage = () => {
     if (!pendingButton) return
+    const currentButton = currentElements.find((el) => el.id === pendingButton.id) as ButtonElement | undefined
     const res = createChildPageFromButton(
       projectState,
       currentPage.id,
       pendingButton.id,
-      displayName
+      (currentButton?.label ?? pendingButton.label).trim() || '新規ページ'
     )
     if ('error' in res) {
       setActiveModal('noToken')
@@ -555,7 +552,6 @@ export function App() {
           <PageInfoPanel
             page={currentPage}
             isOnlyPage={projectState.pages.length <= 1}
-            onUpdateDisplayName={handleUpdateDisplayName}
             onUpdateComment={handleUpdateComment}
             onRequestDeletePage={handleRequestDeletePage}
           />

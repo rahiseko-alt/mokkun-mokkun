@@ -33,6 +33,10 @@ describe('Mobile editing workflow', () => {
     openPanel()
     expect(screen.getByRole('button', { name: /移動 \(A-松\)/ })).toBeVisible()
     expect(screen.queryByRole('button', { name: '← 親へ戻る' })).not.toBeInTheDocument()
+    // ページ名はユーザーが決めず、ボタン名の変更に追従する
+    fireEvent.change(screen.getByRole('textbox', { name: 'ボタン名' }), { target: { value: '顧客一覧' } })
+    expect(screen.getByTitle('顧客一覧')).toBeInTheDocument()
+    expect(screen.queryByTitle('顧客詳細')).not.toBeInTheDocument()
   })
 
   it('updates dimensions numerically and retains them after remounting', () => {

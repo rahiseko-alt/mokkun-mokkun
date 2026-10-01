@@ -6,7 +6,7 @@ import {
   ButtonElement,
 } from '../types'
 import { MIN_ELEMENT_WIDTH, MIN_ELEMENT_HEIGHT } from '../constants'
-import { ArrowRight, PlusCircle } from 'lucide-react'
+import { ArrowRight, Plus } from 'lucide-react'
 
 interface CanvasProps {
   elements: CanvasElement[]
@@ -400,14 +400,15 @@ export const Canvas: React.FC<CanvasProps> = ({
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    maxWidth: 'calc(100% - 24px)',
+                    maxWidth: '100%',
                   }}
                 >
                   {btn.label}
                 </span>
 
-                {/* 遷移 / 作成トリガー */}
+                {/* 遷移 / 作成トリガー: ドラッグと干渉しないようボタンの下に出す */}
                 <button
+                  className={'canvas-link-tab' + (btn.targetPageId ? ' is-linked' : '')}
                   onPointerDown={(e) => e.stopPropagation()}
                   aria-label={btn.targetPageId ? `${btn.label}のページへ移動` : `${btn.label}から子ページ作成`}
                   onClick={(e) => {
@@ -415,22 +416,8 @@ export const Canvas: React.FC<CanvasProps> = ({
                     onButtonClick(btn)
                   }}
                   title={btn.targetPageId ? 'このページへ移動' : 'このボタンからページを作成'}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '3px',
-                    minWidth: isMobile ? '36px' : undefined,
-                    minHeight: isMobile ? '36px' : undefined,
-                    borderRadius: '4px',
-                    backgroundColor: btn.targetPageId ? 'var(--bh-paper-2)' : '#f0fdf4',
-                    color: btn.targetPageId ? 'var(--bh-blue)' : '#16a34a',
-                    border: 'none',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                  }}
                 >
-                  {btn.targetPageId ? <ArrowRight size={13} /> : <PlusCircle size={13} />}
+                  {btn.targetPageId ? <ArrowRight size={isMobile ? 18 : 14} /> : <Plus size={isMobile ? 18 : 14} />}
                 </button>
 
                 {isSelected && renderResizeHandles(btn)}
