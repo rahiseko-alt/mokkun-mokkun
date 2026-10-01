@@ -1,12 +1,13 @@
 import React from 'react'
 import { Page } from '../types'
-import { Plus, FileText, ChevronRight } from 'lucide-react'
+import { Plus, FileText, ChevronRight, X } from 'lucide-react'
 
 interface PageListSidebarProps {
   pages: Page[]
   currentPageId: string
   onSelectPage: (pageId: string) => void
   onAddRootPage: () => void
+  onClose?: () => void
 }
 
 interface TreeNode {
@@ -19,6 +20,7 @@ export const PageListSidebar: React.FC<PageListSidebarProps> = ({
   currentPageId,
   onSelectPage,
   onAddRootPage,
+  onClose,
 }) => {
   // 親子関係に基づいたツリー構造の構築
   const buildTree = (): TreeNode[] => {
@@ -37,7 +39,6 @@ export const PageListSidebar: React.FC<PageListSidebarProps> = ({
       }
     })
 
-    // 各階層で order 順にソート
     const sortNodes = (nodes: TreeNode[]) => {
       nodes.sort((a, b) => a.page.order - b.page.order)
       nodes.forEach((n) => sortNodes(n.children))
@@ -54,11 +55,14 @@ export const PageListSidebar: React.FC<PageListSidebarProps> = ({
     return (
       <div key={node.page.id}>
         <div
-          onClick={() => onSelectPage(node.page.id)}
+          onClick={() => {
+            onSelectPage(node.page.id)
+            if (onClose) onClose()
+          }}
           style={{
             display: 'flex',
             alignItems: 'center',
-            padding: '7px 10px',
+            padding: '8px 10px',
             paddingLeft: `${12 + indent}px`,
             backgroundColor: isSelected ? '#eff6ff' : 'transparent',
             color: isSelected ? '#1d4ed8' : '#334155',
@@ -103,7 +107,7 @@ export const PageListSidebar: React.FC<PageListSidebarProps> = ({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              maxWidth: '120px',
+              maxWidth: '140px',
             }}
             title={node.page.displayName}
           >
@@ -121,12 +125,12 @@ export const PageListSidebar: React.FC<PageListSidebarProps> = ({
   return (
     <aside
       style={{
-        width: '240px',
+        width: '260px',
         backgroundColor: '#ffffff',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - 56px)',
+        height: '100%',
         overflowY: 'auto',
       }}
     >
@@ -142,25 +146,44 @@ export const PageListSidebar: React.FC<PageListSidebarProps> = ({
         <span style={{ fontSize: '13px', fontWeight: 700, color: '#475569' }}>
           ページ一覧 ({pages.length})
         </span>
-        <button
-          onClick={onAddRootPage}
-          title="第1階層の新しいページを追加"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '4px 8px',
-            fontSize: '11px',
-            fontWeight: 600,
-            color: '#2563eb',
-            backgroundColor: '#eff6ff',
-            borderRadius: '4px',
-            border: '1px solid #bfdbfe',
-          }}
-        >
-          <Plus size={12} />
-          <span>追加</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            onClick={onAddRootPage}
+            title="第1階層の新しいページを追加"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              padding: '4px 8px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#2563eb',
+              backgroundColor: '#eff6ff',
+              borderRadius: '4px',
+              border: '1px solid #bfdbfe',
+            }}
+          >
+            <Plus size={12} />
+            <span>追加</span>
+          </button>
+
+          {onClose && (
+            <button
+              onClick={onClose}
+              title="閉じる"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px',
+                borderRadius: '4px',
+                color: '#64748b',
+              }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>

@@ -1,5 +1,14 @@
-import React, { useState } from 'react'
-import { FolderPlus, Save, History, Settings, Edit2, Check } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import {
+  FolderPlus,
+  Save,
+  History,
+  Settings,
+  Edit2,
+  Check,
+  Menu,
+  Info,
+} from 'lucide-react'
 
 interface HeaderProps {
   projectName: string
@@ -9,6 +18,10 @@ interface HeaderProps {
   onOpenSnapshots: () => void
   onOpenSettings: () => void
   saveToastMessage: string | null
+  onToggleSidebar?: () => void
+  onToggleInfoPanel?: () => void
+  isSidebarOpen?: boolean
+  isInfoPanelOpen?: boolean
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,9 +32,25 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSnapshots,
   onOpenSettings,
   saveToastMessage,
+  onToggleSidebar,
+  onToggleInfoPanel,
+  isSidebarOpen,
+  isInfoPanelOpen,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(projectName)
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1200
+  )
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isMobile = windowWidth < 768
+  const isSmallScreen = windowWidth < 640
 
   const handleSaveName = () => {
     const trimmed = nameInput.trim()
@@ -39,36 +68,59 @@ export const Header: React.FC<HeaderProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 20px',
+        padding: '0 12px',
         height: '56px',
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #e2e8f0',
         zIndex: 50,
+        gap: '8px',
       }}
     >
-      {/* プロジェクト名 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      {/* 左セクション: サイドバートグル & プロジェクト名 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+        {/* モバイル・タブレット用サイドバートグルボタン */}
+        {isMobile && onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            title="ページ一覧を開閉"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px',
+              borderRadius: '6px',
+              backgroundColor: isSidebarOpen ? '#eff6ff' : '#f8fafc',
+              border: '1px solid #cbd5e1',
+              color: isSidebarOpen ? '#2563eb' : '#475569',
+            }}
+          >
+            <Menu size={18} />
+          </button>
+        )}
+
         <div
           style={{
             fontWeight: 700,
-            fontSize: '17px',
+            fontSize: isSmallScreen ? '14px' : '16px',
             color: '#0f172a',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '6px',
+            minWidth: 0,
           }}
         >
           <span
             style={{
               display: 'inline-block',
-              width: '10px',
-              height: '10px',
+              width: '8px',
+              height: '8px',
               borderRadius: '50%',
               backgroundColor: '#3b82f6',
+              flexShrink: 0,
             }}
           />
           {isEditingName ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <input
                 type="text"
                 value={nameInput}
@@ -82,11 +134,12 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
                 autoFocus
                 style={{
-                  padding: '4px 8px',
-                  fontSize: '15px',
+                  padding: '4px 6px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   border: '1px solid #3b82f6',
                   borderRadius: '4px',
+                  maxWidth: '120px',
                 }}
               />
               <button
@@ -100,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
                   display: 'flex',
                 }}
               >
-                <Check size={16} />
+                <Check size={14} />
               </button>
             </div>
           ) : (
@@ -114,16 +167,25 @@ export const Header: React.FC<HeaderProps> = ({
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '4px',
                 padding: '4px 6px',
                 borderRadius: '4px',
-                transition: 'background-color 0.2s',
+                maxWidth: isSmallScreen ? '110px' : '200px',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
             >
-              <span>{projectName}</span>
-              <Edit2 size={14} color="#94a3b8" />
+              <span
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {projectName}
+              </span>
+              <Edit2 size={12} color="#94a3b8" style={{ flexShrink: 0 }} />
             </div>
           )}
         </div>
@@ -131,13 +193,14 @@ export const Header: React.FC<HeaderProps> = ({
         {saveToastMessage && (
           <div
             style={{
-              fontSize: '12px',
+              fontSize: '11px',
               backgroundColor: '#ecfdf5',
               color: '#065f46',
-              padding: '3px 10px',
+              padding: '2px 8px',
               borderRadius: '12px',
               border: '1px solid #a7f3d0',
               fontWeight: 500,
+              whiteSpace: 'nowrap',
             }}
           >
             {saveToastMessage}
@@ -145,95 +208,107 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* アクションボタン群 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {/* 右セクション: アクションボタン群 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <button
           onClick={onNewProject}
+          title="新しいプロジェクト"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '7px 12px',
-            fontSize: '13px',
+            gap: '4px',
+            padding: '6px 10px',
+            fontSize: '12px',
             fontWeight: 500,
             color: '#475569',
             backgroundColor: '#f8fafc',
             border: '1px solid #cbd5e1',
             borderRadius: '6px',
-            transition: 'all 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
         >
-          <FolderPlus size={15} />
-          <span>新しいプロジェクト</span>
+          <FolderPlus size={14} />
+          {!isSmallScreen && <span>新規</span>}
         </button>
 
         <button
           onClick={onSaveSnapshot}
+          title="構成を保存"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '7px 14px',
-            fontSize: '13px',
+            gap: '4px',
+            padding: '6px 12px',
+            fontSize: '12px',
             fontWeight: 600,
             color: '#ffffff',
             backgroundColor: '#2563eb',
             borderRadius: '6px',
             boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-            transition: 'background-color 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d4ed8')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
         >
-          <Save size={15} />
+          <Save size={14} />
           <span>構成を保存</span>
         </button>
 
         <button
           onClick={onOpenSnapshots}
+          title="保存した構成を見る"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '7px 12px',
-            fontSize: '13px',
+            gap: '4px',
+            padding: '6px 10px',
+            fontSize: '12px',
             fontWeight: 500,
             color: '#475569',
             backgroundColor: '#ffffff',
             border: '1px solid #cbd5e1',
             borderRadius: '6px',
-            transition: 'all 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
         >
-          <History size={15} />
-          <span>保存した構成を見る</span>
+          <History size={14} />
+          {!isSmallScreen && <span>保存一覧</span>}
         </button>
 
         <button
           onClick={onOpenSettings}
+          title="設定"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '7px 12px',
-            fontSize: '13px',
+            gap: '4px',
+            padding: '6px 10px',
+            fontSize: '12px',
             fontWeight: 500,
             color: '#475569',
             backgroundColor: '#ffffff',
             border: '1px solid #cbd5e1',
             borderRadius: '6px',
-            transition: 'all 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
         >
-          <Settings size={15} />
-          <span>設定</span>
+          <Settings size={14} />
+          {!isSmallScreen && <span>設定</span>}
         </button>
+
+        {/* モバイル・タブレット用ページ情報トグルボタン */}
+        {isMobile && onToggleInfoPanel && (
+          <button
+            onClick={onToggleInfoPanel}
+            title="ページ情報を開閉"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px',
+              borderRadius: '6px',
+              backgroundColor: isInfoPanelOpen ? '#eff6ff' : '#f8fafc',
+              border: '1px solid #cbd5e1',
+              color: isInfoPanelOpen ? '#2563eb' : '#475569',
+            }}
+          >
+            <Info size={18} />
+          </button>
+        )}
       </div>
     </header>
   )

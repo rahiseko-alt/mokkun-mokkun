@@ -18,10 +18,12 @@
 
 body {
   margin: 0;
-  min-width: 1200px;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  min-width: 0;
   overflow: hidden;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button {
@@ -30,6 +32,7 @@ button {
   border: none;
   background: none;
   outline: none;
+  touch-action: manipulation;
 }
 
 input, textarea, select {
@@ -53,12 +56,33 @@ input, textarea, select {
   background: #94a3b8;
 }
 
-/* Animation */
+/* Modal and Drawer Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
 .modal-content {
   animation: fadeIn 0.15s ease-out;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  box-sizing: border-box;
+}
+
+.drawer-left {
+  animation: slideInLeft 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-right {
+  animation: slideInRight 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }

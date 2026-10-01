@@ -38,12 +38,20 @@ export const Canvas: React.FC<CanvasProps> = ({
 
   const selectedElement = elements.find((el) => el.id === selectedElementId) || null
 
-  const handleMouseDown = (
-    e: React.MouseEvent,
+  const handlePointerDown = (
+    e: React.PointerEvent,
     element: CanvasElement,
     mode: DragMode = 'move'
   ) => {
     e.stopPropagation()
+    // タッチでもドラッグできるように
+    if (e.target instanceof Element && e.target.setPointerCapture) {
+      try {
+        e.target.setPointerCapture(e.pointerId)
+      } catch {
+        // ignore if not supported
+      }
+    }
     onSelectElement(element.id)
     setDragMode(mode)
     setDragStartPos({ x: e.clientX, y: e.clientY })
@@ -56,7 +64,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   }
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       if (!dragMode || !dragStartElementState || !selectedElement) return
 
       const dx = e.clientX - dragStartPos.x
@@ -104,19 +112,21 @@ export const Canvas: React.FC<CanvasProps> = ({
       })
     }
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       setDragMode(null)
       setDragStartElementState(null)
     }
 
     if (dragMode) {
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
+      window.addEventListener('pointermove', handlePointerMove)
+      window.addEventListener('pointerup', handlePointerUp)
+      window.addEventListener('pointercancel', handlePointerUp)
     }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
     }
   }, [dragMode, dragStartPos, dragStartElementState, selectedElement, onUpdateElement])
 
@@ -131,70 +141,71 @@ export const Canvas: React.FC<CanvasProps> = ({
   const renderResizeHandles = (el: CanvasElement) => {
     const handleStyle: React.CSSProperties = {
       position: 'absolute',
-      width: '8px',
-      height: '8px',
+      width: '10px',
+      height: '10px',
       backgroundColor: '#2563eb',
-      border: '1px solid #ffffff',
-      borderRadius: '1px',
-      zIndex: 10,
+      border: '1.5px solid #ffffff',
+      borderRadius: '2px',
+      zIndex: 30,
+      touchAction: 'none',
     }
 
     return (
       <>
         {/* 四隅 */}
         <div
-          style={{ ...handleStyle, top: '-4px', left: '-4px', cursor: 'nwse-resize' }}
-          onMouseDown={(e) => handleMouseDown(e, el, 'nw')}
+          style={{ ...handleStyle, top: '-5px', left: '-5px', cursor: 'nwse-resize' }}
+          onPointerDown={(e) => handlePointerDown(e, el, 'nw')}
         />
         <div
-          style={{ ...handleStyle, top: '-4px', right: '-4px', cursor: 'nesw-resize' }}
-          onMouseDown={(e) => handleMouseDown(e, el, 'ne')}
+          style={{ ...handleStyle, top: '-5px', right: '-5px', cursor: 'nesw-resize' }}
+          onPointerDown={(e) => handlePointerDown(e, el, 'ne')}
         />
         <div
-          style={{ ...handleStyle, bottom: '-4px', right: '-4px', cursor: 'nwse-resize' }}
-          onMouseDown={(e) => handleMouseDown(e, el, 'se')}
+          style={{ ...handleStyle, bottom: '-5px', right: '-5px', cursor: 'nwse-resize' }}
+          onPointerDown={(e) => handlePointerDown(e, el, 'se')}
         />
         <div
-          style={{ ...handleStyle, bottom: '-4px', left: '-4px', cursor: 'nesw-resize' }}
-          onMouseDown={(e) => handleMouseDown(e, el, 'sw')}
+          style={{ ...handleStyle, bottom: '-5px', left: '-5px', cursor: 'nesw-resize' }}
+          onPointerDown={(e) => handlePointerDown(e, el, 'sw')}
         />
 
         {/* 四辺 */}
         <div
           style={{
             ...handleStyle,
-            top: '-4px',
-            left: 'calc(50% - 4px)',
+            top: '-5px',
+            left: 'calc(50% - 5px)',
             cursor: 'ns-resize',
           }}
-          onMouseDown={(e) => handleMouseDown(e, el, 'n')}
+          onPointerDown={(e) => handlePointerDown(e, el, 'n')}
         />
         <div
           style={{
             ...handleStyle,
-            bottom: '-4px',
-            left: 'calc(50% - 4px)',
+            bottom: '-5px',
+            left: 'calc(50% - 5px)',
             cursor: 'ns-resize',
           }}
-          onMouseDown={(e) => handleMouseDown(e, el, 's')}
+          onPointerDown={(e) => handlePointerDown(e, el, 's')}
         />
         <div
           style={{
             ...handleStyle,
-            top: 'calc(50% - 4px)',
-            left: '-4px',
+            top: 'calc(50% - 5px)',
+            left: '-5px',
             cursor: 'ew-resize',
           }}
-          onMouseDown={(e) => handleMouseDown(e, el, 'w')}
+          onPointerDown={(e) => handlePointerDown(e, el, 'w')}
         />
         <div
           style={{
             ...handleStyle,
-            top: 'calc(50% - 4px)',
-            right: '-4px',
+            top: 'calc(50% - 5px)',
+            right: '-5px',
             cursor: 'ew-resize',
           }}
-          onMouseDown={(e) => handleMouseDown(e, el, 'e')}
+          onPointerDown={(e) => handlePointerDown(e, el, 'e')}
         />
       </>
     )
@@ -206,20 +217,21 @@ export const Canvas: React.FC<CanvasProps> = ({
       onClick={handleCanvasClick}
       style={{
         flex: 1,
-        height: 'calc(100vh - 112px)',
-        backgroundColor: '#ffffff', // 8.1 キャンバス背景は白
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#ffffff',
         position: 'relative',
         overflow: 'auto',
         cursor: 'default',
-        // 微細な方眼背景で位置合わせを補助
         backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
         backgroundSize: '24px 24px',
+        touchAction: 'pan-x pan-y',
       }}
     >
       <div
         style={{
-          minWidth: '1600px',
-          minHeight: '1200px',
+          minWidth: '1400px',
+          minHeight: '1000px',
           position: 'relative',
         }}
         onClick={handleCanvasClick}
@@ -233,7 +245,7 @@ export const Canvas: React.FC<CanvasProps> = ({
             return (
               <div
                 key={rect.id}
-                onMouseDown={(e) => handleMouseDown(e, rect, 'move')}
+                onPointerDown={(e) => handlePointerDown(e, rect, 'move')}
                 style={{
                   position: 'absolute',
                   left: `${rect.x}px`,
@@ -250,9 +262,10 @@ export const Canvas: React.FC<CanvasProps> = ({
                   flexDirection: 'column',
                   padding: '4px 6px',
                   boxSizing: 'border-box',
+                  touchAction: 'none',
                 }}
               >
-                {/* 9.3 色名称バッジ（例: 赤、青） */}
+                {/* 色名称バッジ */}
                 <div
                   style={{
                     fontSize: '11px',
@@ -287,7 +300,7 @@ export const Canvas: React.FC<CanvasProps> = ({
             return (
               <div
                 key={img.id}
-                onMouseDown={(e) => handleMouseDown(e, img, 'move')}
+                onPointerDown={(e) => handlePointerDown(e, img, 'move')}
                 style={{
                   position: 'absolute',
                   left: `${img.x}px`,
@@ -302,6 +315,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   overflow: 'hidden',
                   backgroundColor: '#f8fafc',
                   boxSizing: 'border-box',
+                  touchAction: 'none',
                 }}
               >
                 <img
@@ -325,7 +339,7 @@ export const Canvas: React.FC<CanvasProps> = ({
             return (
               <div
                 key={btn.id}
-                onMouseDown={(e) => handleMouseDown(e, btn, 'move')}
+                onPointerDown={(e) => handlePointerDown(e, btn, 'move')}
                 style={{
                   position: 'absolute',
                   left: `${btn.x}px`,
@@ -346,9 +360,10 @@ export const Canvas: React.FC<CanvasProps> = ({
                   padding: '4px 8px',
                   boxSizing: 'border-box',
                   gap: '6px',
+                  touchAction: 'none',
                 }}
               >
-                {/* ボタン名 (11.1) */}
+                {/* ボタン名 */}
                 <span
                   style={{
                     fontSize: '13px',
@@ -364,7 +379,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   {btn.label}
                 </span>
 
-                {/* ボタンのアクションアイコン (クリックで遷移 / 子ページ作成) */}
+                {/* 遷移 / 作成トリガー */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -375,7 +390,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: '2px',
+                    padding: '3px',
                     borderRadius: '4px',
                     backgroundColor: btn.targetPageId ? '#eff6ff' : '#f0fdf4',
                     color: btn.targetPageId ? '#2563eb' : '#16a34a',

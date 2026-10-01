@@ -55,6 +55,21 @@ export function App() {
   // トーストメッセージ
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
+  // レスポンシブ用画面幅
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== 'undefined' ? window.innerWidth : 1200
+  )
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false)
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isMobile = windowWidth < 768
+
   // モーダル管理
   const [activeModal, setActiveModal] = useState<
     'createPage' | 'noToken' | 'deleteConfirm' | 'snapshots' | 'settings' | null
@@ -152,6 +167,9 @@ export function App() {
       currentPageId: pageId,
     }))
     setSelectedElementId(null)
+    if (isMobile) {
+      setIsSidebarOpen(false)
+    }
   }
 
   // ルートページ追加
@@ -163,6 +181,9 @@ export function App() {
       setProjectState(res.state)
       setSelectedElementId(null)
       showToast('ルートページを作成しました')
+      if (isMobile) {
+        setIsSidebarOpen(false)
+      }
     }
   }
 
@@ -194,6 +215,9 @@ export function App() {
   const handleRequestDeletePage = () => {
     setPageToDeleteId(currentPage.id)
     setActiveModal('deleteConfirm')
+    if (isMobile) {
+      setIsInfoPanelOpen(false)
+    }
   }
 
   // ページ削除確定 (14.4)
@@ -253,7 +277,6 @@ export function App() {
 
       const img = new Image()
       img.onload = () => {
-        // 初期サイズ計算 (幅最大 360px に調整)
         const maxWidth = 360
         const scale = img.width > maxWidth ? maxWidth / img.width : 1
         const width = Math.round(img.width * scale)
@@ -478,7 +501,7 @@ export function App() {
         backgroundColor: '#f8fafc',
       }}
     >
-      {/* 5.1 上部ヘッダー */}
+      {/* 5.1 上部ヘッダー (レスポンシブトグル付き) */}
       <Header
         projectName={projectState.project.name}
         onUpdateProjectName={handleUpdateProjectName}
@@ -487,17 +510,54 @@ export function App() {
         onOpenSnapshots={() => setActiveModal('snapshots')}
         onOpenSettings={() => setActiveModal('settings')}
         saveToastMessage={toastMessage}
+        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+        onToggleInfoPanel={() => setIsInfoPanelOpen((prev) => !prev)}
+        isSidebarOpen={isSidebarOpen}
+        isInfoPanelOpen={isInfoPanelOpen}
       />
 
-      {/* メインワークスペース (左: ページ一覧, 中央: 白キャンバス, 右: ページ情報) */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* 左: ページ階層一覧 */}
-        <PageListSidebar
-          pages={projectState.pages}
-          currentPageId={currentPage.id}
-          onSelectPage={handleSelectPage}
-          onAddRootPage={handleAddRootPage}
-        />
+      {/* メインワークスペース */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {/* 左: ページ階層一覧 (デスクトップ時は常時、モバイル時はドロワー) */}
+        {!isMobile ? (
+          <PageListSidebar
+            pages={projectState.pages}
+            currentPageId={currentPage.id}
+            onSelectPage={handleSelectPage}
+            onAddRootPage={handleAddRootPage}
+          />
+        ) : (
+          isSidebarOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(15, 23, 42, 0.35)',
+                zIndex: 45,
+                display: 'flex',
+              }}
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <div
+                className="drawer-left"
+                style={{
+                  height: '100%',
+                  boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
+                  backgroundColor: '#ffffff',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <PageListSidebar
+                  pages={projectState.pages}
+                  currentPageId={currentPage.id}
+                  onSelectPage={handleSelectPage}
+                  onAddRootPage={handleAddRootPage}
+                  onClose={() => setIsSidebarOpen(false)}
+                />
+              </div>
+            </div>
+          )
+        )}
 
         {/* 中央: 白いモックキャンバス + ツールバー */}
         <main
@@ -507,6 +567,7 @@ export function App() {
             flexDirection: 'column',
             overflow: 'hidden',
             backgroundColor: '#ffffff',
+            position: 'relative',
           }}
         >
           <Canvas
@@ -530,19 +591,54 @@ export function App() {
           />
         </main>
 
-        {/* 右: ページ情報 */}
-        <PageInfoPanel
-          page={currentPage}
-          isOnlyPage={projectState.pages.length <= 1}
-          onUpdateDisplayName={handleUpdateDisplayName}
-          onUpdateComment={handleUpdateComment}
-          onRequestDeletePage={handleRequestDeletePage}
-        />
+        {/* 右: ページ情報 (デスクトップ時は常時、モバイル時はドロワー) */}
+        {!isMobile ? (
+          <PageInfoPanel
+            page={currentPage}
+            isOnlyPage={projectState.pages.length <= 1}
+            onUpdateDisplayName={handleUpdateDisplayName}
+            onUpdateComment={handleUpdateComment}
+            onRequestDeletePage={handleRequestDeletePage}
+          />
+        ) : (
+          isInfoPanelOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(15, 23, 42, 0.35)',
+                zIndex: 45,
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+              onClick={() => setIsInfoPanelOpen(false)}
+            >
+              <div
+                className="drawer-right"
+                style={{
+                  height: '100%',
+                  boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
+                  backgroundColor: '#ffffff',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <PageInfoPanel
+                  page={currentPage}
+                  isOnlyPage={projectState.pages.length <= 1}
+                  onUpdateDisplayName={handleUpdateDisplayName}
+                  onUpdateComment={handleUpdateComment}
+                  onRequestDeletePage={handleRequestDeletePage}
+                  onClose={() => setIsInfoPanelOpen(false)}
+                />
+              </div>
+            </div>
+          )
+        )}
       </div>
 
       {/* --- モーダル群 --- */}
 
-      {/* ボタンからページを作る確認モーダル (12.1) */}
+      {/* ボタンからページを作る確認モーダル */}
       {activeModal === 'createPage' && pendingButton && (
         <CreateChildPageModal
           buttonLabel={pendingButton.label}
@@ -556,7 +652,7 @@ export function App() {
         />
       )}
 
-      {/* 識別子不足モーダル (12.5) */}
+      {/* 識別子不足モーダル */}
       {activeModal === 'noToken' && (
         <NoTokenModal
           onOpenSettings={() => {
@@ -569,7 +665,7 @@ export function App() {
         />
       )}
 
-      {/* ページ削除確認モーダル (14.2, 14.3) */}
+      {/* ページ削除確認モーダル */}
       {activeModal === 'deleteConfirm' && pageToDeleteId && (
         <DeleteConfirmModal
           pageToDelete={projectState.pages.find((p) => p.id === pageToDeleteId)!}
@@ -582,7 +678,7 @@ export function App() {
         />
       )}
 
-      {/* 保存した構成一覧・復元モーダル (15.5) */}
+      {/* 保存した構成一覧・復元モーダル */}
       {activeModal === 'snapshots' && (
         <SnapshotsModal
           snapshots={snapshots}
@@ -591,7 +687,7 @@ export function App() {
         />
       )}
 
-      {/* 識別子セット設定モーダル (7.2, 7.4, 7.5) */}
+      {/* 識別子セット設定モーダル */}
       {activeModal === 'settings' && (
         <SettingsModal
           identifierSets={projectState.project.identifierSets}

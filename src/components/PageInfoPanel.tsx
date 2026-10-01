@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Page } from '../types'
-import { Trash2, AlertCircle, Hash, FileEdit, MessageSquare } from 'lucide-react'
+import { Trash2, AlertCircle, Hash, FileEdit, MessageSquare, X } from 'lucide-react'
 
 interface PageInfoPanelProps {
   page: Page
@@ -8,6 +8,7 @@ interface PageInfoPanelProps {
   onUpdateDisplayName: (displayName: string) => void
   onUpdateComment: (comment: string) => void
   onRequestDeletePage: () => void
+  onClose?: () => void
 }
 
 export const PageInfoPanel: React.FC<PageInfoPanelProps> = ({
@@ -16,6 +17,7 @@ export const PageInfoPanel: React.FC<PageInfoPanelProps> = ({
   onUpdateDisplayName,
   onUpdateComment,
   onRequestDeletePage,
+  onClose,
 }) => {
   const [displayName, setDisplayName] = useState(page.displayName)
   const [comment, setComment] = useState(page.comment)
@@ -56,16 +58,34 @@ export const PageInfoPanel: React.FC<PageInfoPanelProps> = ({
         borderLeft: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - 56px)',
+        height: '100%',
         overflowY: 'auto',
         padding: '16px',
-        gap: '20px',
+        gap: '16px',
       }}
     >
       <div>
-        <h2 style={{ fontSize: '14px', fontWeight: 700, color: '#334155', marginBottom: '14px' }}>
-          ページ情報
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <h2 style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>
+            ページ情報
+          </h2>
+          {onClose && (
+            <button
+              onClick={onClose}
+              title="閉じる"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px',
+                borderRadius: '4px',
+                color: '#64748b',
+              }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
 
         {/* ページ識別子 */}
         <div style={{ marginBottom: '16px' }}>
@@ -161,7 +181,7 @@ export const PageInfoPanel: React.FC<PageInfoPanelProps> = ({
             value={comment}
             onChange={handleCommentChange}
             placeholder="例: 赤の四角には顧客情報を表示する。青の四角は予約履歴。"
-            rows={6}
+            rows={5}
             style={{
               width: '100%',
               padding: '8px 10px',
