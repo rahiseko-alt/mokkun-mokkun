@@ -496,7 +496,7 @@ export function App() {
         display: 'flex',
         flexDirection: 'column',
         width: '100vw',
-        height: '100vh',
+        height: '100dvh',
         overflow: 'hidden',
         backgroundColor: '#f8fafc',
       }}
@@ -510,12 +510,17 @@ export function App() {
         onOpenSnapshots={() => setActiveModal('snapshots')}
         onOpenSettings={() => setActiveModal('settings')}
         saveToastMessage={toastMessage}
-        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-        onToggleInfoPanel={() => setIsInfoPanelOpen((prev) => !prev)}
+        onToggleSidebar={() => { setIsSidebarOpen((prev) => !prev); setIsInfoPanelOpen(false) }}
+        onToggleInfoPanel={() => { setIsInfoPanelOpen((prev) => !prev); setIsSidebarOpen(false) }}
         isSidebarOpen={isSidebarOpen}
         isInfoPanelOpen={isInfoPanelOpen}
       />
 
+      {isMobile && <div className="mobile-page-location">
+        {currentPage.parentPageId && <button onClick={() => handleSelectPage(currentPage.parentPageId!)}>← 親へ戻る</button>}
+        <div><span>{currentPage.identifierPath}</span><strong>{currentPage.displayName}</strong></div>
+        <small>編集は自動保存</small>
+      </div>}
       {/* メインワークスペース */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
         {/* 左: ページ階層一覧 (デスクトップ時は常時、モバイル時はドロワー) */}
@@ -562,6 +567,8 @@ export function App() {
         {/* 中央: 白いモックキャンバス + ツールバー */}
         <main
           style={{
+            minWidth: 0,
+            minHeight: 0,
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
@@ -571,6 +578,8 @@ export function App() {
           }}
         >
           <Canvas
+            key={currentPage.id}
+            isMobile={isMobile}
             elements={currentElements}
             selectedElementId={selectedElementId}
             onSelectElement={setSelectedElementId}
@@ -578,6 +587,24 @@ export function App() {
             onButtonClick={handleButtonClick}
           />
 
+          {isMobile && selectedElement && <details className="mobile-element-size" key={selectedElement.id}>
+            <summary>位置・サイズを数値で調整</summary>
+            <div>{(['x', 'y', 'width', 'height'] as const).map((field) => <label key={field}>
+              {{ x: '左から', y: '上から', width: '幅', height: '高さ' }[field]}
+              <input type="number" inputMode="numeric" min={field === 'x' || field === 'y' ? 0 : 40} value={selectedElement[field]} onChange={e => {
+                if (e.target.value === '') return
+                const value = Number(e.target.value)
+                if (!Number.isFinite(value)) return
+                const next = Math.max(field === 'x' || field === 'y' ? 0 : 40, Math.round(value))
+                const updated = { ...selectedElement, [field]: next, updatedAt: new Date().toISOString() }
+                if (selectedElement.type === 'image' && selectedElement.keepAspectRatio) {
+                  if (field === 'width') updated.height = Math.max(40, Math.round(next * selectedElement.height / selectedElement.width))
+                  if (field === 'height') updated.width = Math.max(40, Math.round(next * selectedElement.width / selectedElement.height))
+                }
+                handleUpdateElement(updated)
+              }} />
+            </label>)}</div>
+          </details>}
           {/* 下部: ツールバー ([四角] [画像] [ボタン] 等) */}
           <Toolbar
             onAddRectangle={handleAddRectangle}

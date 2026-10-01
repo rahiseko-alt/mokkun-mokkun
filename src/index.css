@@ -86,3 +86,34 @@ input, textarea, select {
 .drawer-right {
   animation: slideInRight 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+.canvas-region { display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
+.canvas-empty { position: absolute; top: 100px; left: 24px; right: 24px; text-align: center; color: #64748b; pointer-events: none; }
+.canvas-empty-icon { display: block; margin: 0 auto 16px; font-size: 32px; color: #2563eb; }
+.canvas-empty strong { display: block; font-size: 18px; color: #334155; margin-bottom: 10px; }
+.canvas-empty p { font-size: 14px; line-height: 1.8; }
+.canvas-view-controls { display: flex; align-items: center; gap: 8px; padding: 4px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+.canvas-view-controls span { margin-right: auto; font-size: 12px; color: #64748b; }
+.canvas-view-controls button { min-width: 44px; min-height: 44px; color: #334155; font-size: 14px; border-radius: 8px; }
+.mobile-page-location { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+.mobile-page-location button { min-height: 44px; padding: 0 10px; color: #1d4ed8; background: #eff6ff; border-radius: 8px; font-size: 13px; flex-shrink: 0; }
+.mobile-page-location > div { display: flex; flex: 1; min-width: 0; align-items: center; gap: 8px; }
+.mobile-page-location span { font-size: 12px; color: #1d4ed8; background: #eff6ff; padding: 4px 8px; border-radius: 6px; max-width: 90px; overflow-wrap: anywhere; }
+.mobile-page-location strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mobile-page-location small { font-size: 10px; color: #64748b; flex-shrink: 0; }
+@media (max-width: 767px) {
+  body { height: 100dvh; }
+  .modal-content { max-height: calc(100dvh - 32px); overflow-y: auto; }
+  .modal-content button, .drawer-left button, .drawer-right button { min-height: 44px; }
+  .modal-content input, .modal-content textarea, .drawer-right input, .drawer-right textarea { font-size: 16px !important; }
+  .drawer-left, .drawer-right { max-width: calc(100vw - 32px); }
+}
+.mobile-element-size { background: white; border-top: 1px solid #e2e8f0; padding: 0 12px; flex-shrink: 0; }
+.mobile-element-size summary { padding: 12px 0; font-size: 13px; color: #475569; cursor: pointer; min-height: 44px; }
+.mobile-element-size > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-bottom: 12px; }
+.mobile-element-size label { font-size: 12px; color: #64748b; }
+.mobile-element-size input { display: block; width: 100%; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; font-size: 16px; color: #334155; }

@@ -14,6 +14,7 @@ interface CanvasProps {
   onSelectElement: (id: string | null) => void
   onUpdateElement: (updated: CanvasElement) => void
   onButtonClick: (button: ButtonElement) => void
+  isMobile?: boolean
 }
 
 type DragMode = 'move' | 'nw' | 'ne' | 'se' | 'sw' | 'n' | 's' | 'e' | 'w' | null
@@ -24,6 +25,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   onSelectElement,
   onUpdateElement,
   onButtonClick,
+  isMobile = false,
 }) => {
   const [dragMode, setDragMode] = useState<DragMode>(null)
   const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -35,6 +37,19 @@ export const Canvas: React.FC<CanvasProps> = ({
   } | null>(null)
 
   const canvasRef = useRef<HTMLDivElement | null>(null)
+  const [viewportWidth, setViewportWidth] = useState(360)
+  const [zoom, setZoom] = useState(1)
+  const dragScale = useRef(1)
+  const sceneWidth = isMobile ? Math.max(360, ...elements.map(el => el.x + el.width + 32)) : 1400
+  const sceneHeight = Math.max(isMobile ? 560 : 1000, ...elements.map(el => el.y + el.height + 32))
+  const scale = isMobile ? Math.min(1, viewportWidth / sceneWidth) * zoom : 1
+
+  useEffect(() => {
+    if (!canvasRef.current || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(([entry]) => setViewportWidth(entry.contentRect.width))
+    observer.observe(canvasRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   const selectedElement = elements.find((el) => el.id === selectedElementId) || null
 
@@ -44,6 +59,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     mode: DragMode = 'move'
   ) => {
     e.stopPropagation()
+    if (e.button !== 0) return
     // タッチでもドラッグできるように
     if (e.target instanceof Element && e.target.setPointerCapture) {
       try {
@@ -53,6 +69,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       }
     }
     onSelectElement(element.id)
+    dragScale.current = scale
     setDragMode(mode)
     setDragStartPos({ x: e.clientX, y: e.clientY })
     setDragStartElementState({
@@ -67,8 +84,8 @@ export const Canvas: React.FC<CanvasProps> = ({
     const handlePointerMove = (e: PointerEvent) => {
       if (!dragMode || !dragStartElementState || !selectedElement) return
 
-      const dx = e.clientX - dragStartPos.x
-      const dy = e.clientY - dragStartPos.y
+      const dx = (e.clientX - dragStartPos.x) / dragScale.current
+      const dy = (e.clientY - dragStartPos.y) / dragScale.current
 
       let newX = dragStartElementState.x
       let newY = dragStartElementState.y
@@ -128,11 +145,11 @@ export const Canvas: React.FC<CanvasProps> = ({
       window.removeEventListener('pointerup', handlePointerUp)
       window.removeEventListener('pointercancel', handlePointerUp)
     }
-  }, [dragMode, dragStartPos, dragStartElementState, selectedElement, onUpdateElement])
+  }, [dragMode, dragStartPos, dragStartElementState, selectedElement, onUpdateElement, scale])
 
   // 背景クリックで選択解除
   const handleCanvasClick = (e: React.MouseEvent) => {
-    if (e.target === canvasRef.current) {
+    if (e.target === e.currentTarget) {
       onSelectElement(null)
     }
   }
@@ -141,8 +158,8 @@ export const Canvas: React.FC<CanvasProps> = ({
   const renderResizeHandles = (el: CanvasElement) => {
     const handleStyle: React.CSSProperties = {
       position: 'absolute',
-      width: '10px',
-      height: '10px',
+      width: isMobile ? '28px' : '10px',
+      height: isMobile ? '28px' : '10px',
       backgroundColor: '#2563eb',
       border: '1.5px solid #ffffff',
       borderRadius: '2px',
@@ -150,6 +167,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       touchAction: 'none',
     }
 
+    if (isMobile) return <button aria-label="右下をドラッグしてサイズ変更" style={{ ...handleStyle, bottom: '-14px', right: '-14px', cursor: 'nwse-resize' }} onPointerDown={(e) => handlePointerDown(e, el, 'se')}>↘</button>
     return (
       <>
         {/* 四隅 */}
@@ -212,6 +230,13 @@ export const Canvas: React.FC<CanvasProps> = ({
   }
 
   return (
+    <div className="canvas-region">
+      {isMobile && <div className="canvas-view-controls" aria-label="キャンバスの表示">
+        <span>表示 {Math.round(scale * 100)}%</span>
+        <button onClick={() => setZoom(z => Math.max(0.5, z - 0.25))} aria-label="縮小">−</button>
+        <button onClick={() => setZoom(z => Math.min(3, z + 0.25))} aria-label="拡大">＋</button>
+        <button onClick={() => { setZoom(1); canvasRef.current?.scrollTo?.(0, 0) }}>幅に合わせる</button>
+      </div>}
     <div
       ref={canvasRef}
       onClick={handleCanvasClick}
@@ -228,14 +253,16 @@ export const Canvas: React.FC<CanvasProps> = ({
         touchAction: 'pan-x pan-y',
       }}
     >
+      <div style={{ width: sceneWidth * scale, height: sceneHeight * scale }}>
       <div
-        style={{
-          minWidth: '1400px',
-          minHeight: '1000px',
-          position: 'relative',
-        }}
+        style={{ width: sceneWidth, height: sceneHeight, position: 'relative', transform: `scale(${scale})`, transformOrigin: 'top left' }}
         onClick={handleCanvasClick}
       >
+        {elements.length === 0 && <div className="canvas-empty">
+          <span className="canvas-empty-icon">＋</span>
+          <strong>ここに画面をつくりましょう</strong>
+          <p>下の「四角」で領域を配置。<br />「ボタン」から次のページをつくれます。</p>
+        </div>}
         {elements.map((el) => {
           const isSelected = el.id === selectedElementId
 
@@ -381,6 +408,8 @@ export const Canvas: React.FC<CanvasProps> = ({
 
                 {/* 遷移 / 作成トリガー */}
                 <button
+                  onPointerDown={(e) => e.stopPropagation()}
+                  aria-label={btn.targetPageId ? `${btn.label}のページへ移動` : `${btn.label}から子ページ作成`}
                   onClick={(e) => {
                     e.stopPropagation()
                     onButtonClick(btn)
@@ -391,6 +420,8 @@ export const Canvas: React.FC<CanvasProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     padding: '3px',
+                    minWidth: isMobile ? '36px' : undefined,
+                    minHeight: isMobile ? '36px' : undefined,
                     borderRadius: '4px',
                     backgroundColor: btn.targetPageId ? '#eff6ff' : '#f0fdf4',
                     color: btn.targetPageId ? '#2563eb' : '#16a34a',
@@ -410,6 +441,8 @@ export const Canvas: React.FC<CanvasProps> = ({
           return null
         })}
       </div>
+      </div>
+    </div>
     </div>
   )
 }
