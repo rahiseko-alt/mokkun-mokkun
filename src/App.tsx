@@ -567,7 +567,6 @@ export function App() {
             onAddStroke={handleAddStroke}
             onRemoveStrokes={handleRemoveStrokes}
             tool={drawTool}
-            onExitTool={() => setDrawTool('select')}
           />
         </main>
 

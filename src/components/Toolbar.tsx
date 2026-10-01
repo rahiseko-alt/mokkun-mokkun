@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { Square, Image as ImageIcon, MousePointerClick, Type, Save, History, FolderPlus, Settings, MousePointer2, Pencil, Eraser } from 'lucide-react'
+import { Square, Image as ImageIcon, MousePointerClick, Type, Save, History, FolderPlus, Settings, Pencil, Eraser } from 'lucide-react'
 import { DrawTool } from '../types'
 
 interface ToolbarProps {
@@ -16,7 +16,6 @@ interface ToolbarProps {
 }
 
 const TOOLS: { key: DrawTool; label: string; Icon: typeof Pencil }[] = [
-  { key: 'select', label: '選択', Icon: MousePointer2 },
   { key: 'pen', label: '鉛筆', Icon: Pencil },
   { key: 'eraser', label: '消しゴム', Icon: Eraser },
 ]
@@ -47,7 +46,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <h2 className="bh-section-title"><span className="bh-mark bh-mark-ink" />描画</h2>
         <div className="bh-tools" role="group" aria-label="描画ツール">
           {TOOLS.map(({ key, label, Icon }) => (
-            <button key={key} type="button" className="bh-btn" aria-pressed={tool === key} onClick={() => onChangeTool(key)}><Icon size={16} /><span>{label}</span></button>
+            <button key={key} type="button" className="bh-btn" aria-pressed={tool === key} onClick={() => onChangeTool(tool === key ? 'select' : key)}><Icon size={16} /><span>{label}</span></button>
           ))}
         </div>
       </section>

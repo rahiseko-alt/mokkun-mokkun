@@ -38,7 +38,8 @@ describe('UI Mock App Component Tests', () => {
       expect(screen.getByRole('button', { name })).toBeInTheDocument()
     }
     // 描画ツール
-    for (const name of ['選択', '鉛筆', '消しゴム']) {
+    expect(screen.queryByRole('button', { name: '選択' })).not.toBeInTheDocument()
+    for (const name of ['鉛筆', '消しゴム']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument()
     }
   })
@@ -106,10 +107,13 @@ describe('UI Mock App Component Tests', () => {
     expect(paths).toHaveLength(1)
     expect(paths[0].getAttribute('d')).toBe('M100 100 L140 120')
 
-    // 鉛筆中は「鉛筆を終了」で選択に戻れる
-    fireEvent.click(screen.getByRole('button', { name: '鉛筆を終了' }))
-    expect(screen.queryByRole('button', { name: '鉛筆を終了' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '選択' })).toHaveAttribute('aria-pressed', 'true')
+    // 鉛筆ボタンをもう一度押すと解除され、描画画面に描けなくなる
+    const pen = screen.getByRole('button', { name: '鉛筆' })
+    expect(pen).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(pen)
+    expect(pen).toHaveAttribute('aria-pressed', 'false')
+    expect(layer).not.toHaveClass('is-active')
+    fireEvent.click(pen)
 
     fireEvent.click(screen.getByRole('button', { name: '消しゴム' }))
     fireEvent.pointerDown(layer, { button: 0, pointerId: 2, clientX: 141, clientY: 121 })

@@ -23,7 +23,6 @@ interface CanvasProps {
   onAddStroke: (points: number[]) => void
   onRemoveStrokes: (ids: string[]) => void
   tool: DrawTool
-  onExitTool: () => void
   isMobile?: boolean
 }
 
@@ -44,7 +43,6 @@ export const Canvas: React.FC<CanvasProps> = ({
   onAddStroke,
   onRemoveStrokes,
   tool,
-  onExitTool,
   isMobile = false,
 }) => {
   const [dragMode, setDragMode] = useState<DragMode>(null)
@@ -603,7 +601,6 @@ export const Canvas: React.FC<CanvasProps> = ({
       </div>
       </div>
     </div>
-      {tool !== 'select' && <button type="button" className="canvas-tool-exit" onClick={onExitTool}>{tool === 'pen' ? '鉛筆' : '消しゴム'}を終了</button>}
     </div>
   )
 }
