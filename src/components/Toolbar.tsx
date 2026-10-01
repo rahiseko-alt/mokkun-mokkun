@@ -62,7 +62,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   <button key={f.label} type="button" aria-pressed={textEl.fontSize === f.size} onClick={() => updateText({ fontSize: f.size })}>{f.label}</button>
                 ))}</div>
               </div>
-              <p className="bh-hint">枠の角をドラッグすると、文字を置く範囲を変えられます。</p>
+              <p className="bh-hint">描画画面でテキストをもう一度タップすると直接入力できます。枠の角をドラッグすると範囲を変えられます。</p>
             </>}
             <button type="button" className="bh-btn bh-delete" onClick={onDeleteSelected} title="選択中の要素を削除"><Trash2 size={18} /><span>削除</span></button>
           </div>

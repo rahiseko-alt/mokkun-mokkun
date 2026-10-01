@@ -40,6 +40,9 @@ export const Canvas: React.FC<CanvasProps> = ({
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const [viewportWidth, setViewportWidth] = useState(360)
   const dragScale = useRef(1)
+  // テキストは「選択済みの状態でもう一度タップ」で描画画面上で直接編集する
+  const [editingTextId, setEditingTextId] = useState<string | null>(null)
+  const tapRef = useRef<{ id: string; wasSelected: boolean; moved: boolean } | null>(null)
   const sceneWidth = isMobile ? Math.max(360, ...elements.map(el => el.x + el.width + 32)) : 1400
   const sceneHeight = Math.max(isMobile ? 560 : 1000, ...elements.map(el => el.y + el.height + 32))
   const scale = isMobile ? Math.min(1, viewportWidth / sceneWidth) : 1
@@ -68,6 +71,8 @@ export const Canvas: React.FC<CanvasProps> = ({
         // ignore if not supported
       }
     }
+    tapRef.current = { id: element.id, wasSelected: element.id === selectedElementId, moved: false }
+    if (editingTextId && editingTextId !== element.id) setEditingTextId(null)
     onSelectElement(element.id)
     dragScale.current = scale
     setDragMode(mode)
@@ -86,6 +91,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
       const dx = (e.clientX - dragStartPos.x) / dragScale.current
       const dy = (e.clientY - dragStartPos.y) / dragScale.current
+      if (tapRef.current && Math.hypot(dx, dy) > 4) tapRef.current.moved = true
 
       let newX = dragStartElementState.x
       let newY = dragStartElementState.y
@@ -130,6 +136,11 @@ export const Canvas: React.FC<CanvasProps> = ({
     }
 
     const handlePointerUp = () => {
+      const tap = tapRef.current
+      tapRef.current = null
+      if (tap && dragMode === 'move' && tap.wasSelected && !tap.moved && selectedElement?.type === 'text') {
+        setEditingTextId(tap.id)
+      }
       setDragMode(null)
       setDragStartElementState(null)
     }
@@ -150,6 +161,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   // 背景クリックで選択解除
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
+      setEditingTextId(null)
       onSelectElement(null)
     }
   }
@@ -411,7 +423,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   }}
                   title={btn.targetPageId ? 'このページへ移動' : 'このボタンからページを作成'}
                 >
-                  {btn.targetPageId ? <ArrowRight size={isMobile ? 18 : 14} /> : <Plus size={isMobile ? 18 : 14} />}
+                  <span className="canvas-link-mark">{btn.targetPageId ? <ArrowRight size={10} strokeWidth={1.5} /> : <Plus size={10} strokeWidth={1.5} />}</span>
                 </button>
 
                 {isSelected && renderResizeHandles(btn)}
@@ -436,8 +448,21 @@ export const Canvas: React.FC<CanvasProps> = ({
                   zIndex: isSelected ? 20 : txt.zIndex,
                 }}
               >
-                <span>{txt.text || ' '}</span>
-                {isSelected && renderResizeHandles(txt)}
+                {editingTextId === txt.id ? (
+                  <textarea
+                    className="canvas-text-input"
+                    aria-label="テキストを直接編集"
+                    value={txt.text}
+                    autoFocus
+                    onFocus={(e) => e.currentTarget.select()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onChange={(e) => onUpdateElement({ ...txt, text: e.target.value, updatedAt: new Date().toISOString() })}
+                    onBlur={() => setEditingTextId(null)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.blur() }}
+                    style={{ fontSize: `${txt.fontSize}px` }}
+                  />
+                ) : <span>{txt.text || ' '}</span>}
+                {isSelected && editingTextId !== txt.id && renderResizeHandles(txt)}
               </div>
             )
           }

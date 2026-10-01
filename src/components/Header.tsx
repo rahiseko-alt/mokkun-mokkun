@@ -53,7 +53,6 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="mc-header">
       <div className="mc-header-main">
-        <span className="bh-logo" aria-hidden="true"><i /><i /><i /></span>
         <div className="mc-project">
           {isEditingName ? (
             <div className="mc-name-edit">

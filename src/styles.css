@@ -80,13 +80,8 @@
 .mc-header { position: relative; flex-shrink: 0; z-index: 70; padding: 8px 16px; background: var(--bh-paper); border-bottom: 4px solid var(--bh-ink); }
 .mc-header-main, .mc-header-actions, .mc-desktop-actions, .mc-name-edit { display: flex; align-items: center; gap: 8px; }
 .mc-header-main { justify-content: space-between; min-height: 44px; }
-.bh-logo { display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
-.bh-logo i { display: block; width: 14px; height: 14px; }
-.bh-logo i:nth-child(1) { background: var(--bh-red); border-radius: 50%; }
-.bh-logo i:nth-child(2) { background: var(--bh-blue); }
-.bh-logo i:nth-child(3) { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid var(--bh-yellow); }
 .mc-project { min-width: 0; flex: 1; }
-.mc-project-name { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; max-width: 320px; font-size: 17px; font-weight: 800; letter-spacing: 0.04em; }
+.mc-project-name { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0; max-width: 100%; font-size: 17px; font-weight: 800; letter-spacing: 0.04em; }
 .mc-project-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mc-project-name svg { flex-shrink: 0; }
 .mc-control { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 8px 12px; border: var(--bh-border); background: var(--bh-paper); color: var(--bh-ink); font-size: 13px; font-weight: 700; white-space: nowrap; transition: background-color 0.12s, color 0.12s; }
@@ -136,10 +131,7 @@
 }
 
 /* 描画画面のボタン: 子ページ作成/移動のタブはボタンの下に置き、ドラッグ操作と分ける */
-.canvas-link-tab { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: var(--bh-border); background: var(--bh-yellow); color: var(--bh-ink); cursor: pointer; }
-.canvas-link-tab.is-linked { background: var(--bh-blue); border-color: var(--bh-blue); color: var(--bh-paper); }
-@media (max-width: 767px) { .canvas-link-tab { width: 40px; height: 40px; } }
-
+@media (max-width: 767px) { 
 /* テキスト要素: 背景は透明。範囲が分かるよう編集時だけ点線を出す */
 .canvas-text { position: absolute; box-sizing: border-box; padding: 2px 4px; border: 1px dashed rgba(17, 17, 17, 0.25); background: transparent; color: var(--bh-ink); line-height: 1.4; font-weight: 700; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; cursor: move; touch-action: none; }
 .canvas-text.is-selected { overflow: visible; border: 2px solid var(--bh-blue); }
@@ -148,3 +140,10 @@
 .bh-segment button { min-height: 44px; border: var(--bh-border); margin-left: -2px; font-weight: 700; }
 .bh-segment button:first-child { margin-left: 0; }
 .bh-segment button[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }
+
+/* 子ページ作成/移動のマーク: ボタン本体より目立たない、細い黒の破線の丸 */
+.canvas-link-tab { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; background: transparent; color: var(--bh-ink); cursor: pointer; }
+.canvas-link-mark { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1px dashed var(--bh-ink); border-radius: 50%; opacity: 0.7; }
+.canvas-link-tab:hover .canvas-link-mark { opacity: 1; }
+@media (max-width: 767px) { .canvas-link-tab { width: 36px; height: 36px; } }
+.canvas-text-input { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; resize: none; outline: none; }

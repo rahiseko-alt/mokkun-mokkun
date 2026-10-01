@@ -56,6 +56,20 @@ describe('Mobile editing workflow', () => {
     expect(text.style.backgroundColor).toBe('')
   })
 
+  it('edits text directly on the canvas when a selected text is tapped again', () => {
+    const { container } = render(<App />)
+    openPanel()
+    fireEvent.click(screen.getByRole('button', { name: /テキスト.*文字を置く/ }))
+    const text = container.querySelector('.canvas-text') as HTMLElement
+    fireEvent.pointerDown(text, { button: 0, pointerId: 1, clientX: 90, clientY: 90 })
+    fireEvent.pointerUp(window, { pointerId: 1 })
+    const input = screen.getByRole('textbox', { name: 'テキストを直接編集' })
+    fireEvent.change(input, { target: { value: 'お知らせ' } })
+    fireEvent.blur(input)
+    expect(screen.queryByRole('textbox', { name: 'テキストを直接編集' })).not.toBeInTheDocument()
+    expect(container.querySelector('.canvas-text')).toHaveTextContent('お知らせ')
+  })
+
   it('slides the control panel in and out and saves a restorable snapshot', () => {
     render(<App />)
     const toggle = screen.getByRole('button', { name: '操作' })
