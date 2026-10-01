@@ -160,7 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
+        backgroundColor: 'rgba(17, 17, 17, 0.45)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -185,8 +185,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       >
         {/* ヘッダー */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-          <SettingsIcon size={20} color="#2563eb" />
-          <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
+          <SettingsIcon size={20} color="var(--bh-blue)" />
+          <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--bh-ink)' }}>
             識別子セット設定
           </h3>
         </div>
@@ -198,11 +198,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             alignItems: 'flex-start',
             gap: '8px',
             padding: '10px 12px',
-            backgroundColor: '#eff6ff',
+            backgroundColor: 'var(--bh-paper-2)',
             border: '1px solid #bfdbfe',
             borderRadius: '6px',
             fontSize: '12px',
-            color: '#1e40af',
+            color: 'var(--bh-ink)',
             lineHeight: '1.5',
             marginBottom: '16px',
           }}
@@ -222,7 +222,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               border: '1px solid #fecaca',
               borderRadius: '6px',
               fontSize: '12px',
-              color: '#dc2626',
+              color: 'var(--bh-red)',
               marginBottom: '14px',
               fontWeight: 600,
             }}
@@ -245,9 +245,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 padding: '6px 14px',
                 fontSize: '13px',
                 fontWeight: activeDepth === s.depth ? 700 : 500,
-                color: activeDepth === s.depth ? '#2563eb' : '#64748b',
-                backgroundColor: activeDepth === s.depth ? '#eff6ff' : '#f8fafc',
-                border: activeDepth === s.depth ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                color: activeDepth === s.depth ? 'var(--bh-blue)' : 'var(--bh-muted)',
+                backgroundColor: activeDepth === s.depth ? 'var(--bh-paper-2)' : 'var(--bh-paper-2)',
+                border: activeDepth === s.depth ? '1.5px solid var(--bh-blue)' : '1px solid #e2e8f0',
                 borderRadius: '6px',
                 whiteSpace: 'nowrap',
               }}
@@ -265,8 +265,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               padding: '6px 10px',
               fontSize: '12px',
               fontWeight: 600,
-              color: '#475569',
-              backgroundColor: '#f1f5f9',
+              color: 'var(--bh-ink)',
+              backgroundColor: 'var(--bh-paper-2)',
               borderRadius: '6px',
               border: '1px dashed #cbd5e1',
             }}
@@ -304,7 +304,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               fontSize: '13px',
               fontWeight: 600,
               color: '#ffffff',
-              backgroundColor: '#2563eb',
+              backgroundColor: 'var(--bh-blue)',
               borderRadius: '6px',
             }}
           >
@@ -322,7 +322,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             border: '1px solid #e2e8f0',
             borderRadius: '6px',
             padding: '8px',
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'var(--bh-paper-2)',
             display: 'flex',
             flexDirection: 'column',
             gap: '6px',
@@ -345,7 +345,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 style={{
                   fontSize: '11px',
                   fontWeight: 600,
-                  color: '#94a3b8',
+                  color: 'var(--bh-muted)',
                   width: '24px',
                 }}
               >
@@ -364,7 +364,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   borderRadius: '4px',
                   backgroundColor: 'transparent',
                 }}
-                onFocus={(e) => (e.target.style.backgroundColor = '#f1f5f9')}
+                onFocus={(e) => (e.target.style.backgroundColor = 'var(--bh-paper-2)')}
                 onBlur={(e) => (e.target.style.backgroundColor = 'transparent')}
               />
 
@@ -376,7 +376,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 style={{
                   padding: '4px',
                   borderRadius: '3px',
-                  color: index === 0 ? '#cbd5e1' : '#64748b',
+                  color: index === 0 ? 'var(--bh-ink)' : 'var(--bh-muted)',
                   cursor: index === 0 ? 'not-allowed' : 'pointer',
                 }}
               >
@@ -390,7 +390,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 style={{
                   padding: '4px',
                   borderRadius: '3px',
-                  color: index === currentSet.tokens.length - 1 ? '#cbd5e1' : '#64748b',
+                  color: index === currentSet.tokens.length - 1 ? 'var(--bh-ink)' : 'var(--bh-muted)',
                   cursor: index === currentSet.tokens.length - 1 ? 'not-allowed' : 'pointer',
                 }}
               >
@@ -404,7 +404,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 style={{
                   padding: '4px',
                   borderRadius: '3px',
-                  color: '#ef4444',
+                  color: 'var(--bh-red)',
                 }}
               >
                 <Trash2 size={14} />
@@ -421,8 +421,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               padding: '8px 16px',
               fontSize: '13px',
               fontWeight: 500,
-              color: '#475569',
-              backgroundColor: '#f1f5f9',
+              color: 'var(--bh-ink)',
+              backgroundColor: 'var(--bh-paper-2)',
               borderRadius: '6px',
             }}
           >
@@ -435,7 +435,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               fontSize: '13px',
               fontWeight: 600,
               color: '#ffffff',
-              backgroundColor: '#2563eb',
+              backgroundColor: 'var(--bh-blue)',
               borderRadius: '6px',
             }}
           >

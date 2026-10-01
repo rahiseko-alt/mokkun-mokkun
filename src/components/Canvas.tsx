@@ -160,7 +160,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       position: 'absolute',
       width: isMobile ? '28px' : '10px',
       height: isMobile ? '28px' : '10px',
-      backgroundColor: '#2563eb',
+      backgroundColor: 'var(--bh-blue)',
       border: '1.5px solid #ffffff',
       borderRadius: '2px',
       zIndex: 30,
@@ -261,7 +261,7 @@ export const Canvas: React.FC<CanvasProps> = ({
         {elements.length === 0 && <div className="canvas-empty">
           <span className="canvas-empty-icon">＋</span>
           <strong>ここに画面をつくりましょう</strong>
-          <p>下の「四角」で領域を配置。<br />「ボタン」から次のページをつくれます。</p>
+          <p>{isMobile ? '右上の「操作」' : '右の操作パネル'}の「四角」で領域を配置。<br />「ボタン」から次のページをつくれます。</p>
         </div>}
         {elements.map((el) => {
           const isSelected = el.id === selectedElementId
@@ -280,7 +280,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   width: `${rect.width}px`,
                   height: `${rect.height}px`,
                   backgroundColor: rect.colorHex,
-                  border: isSelected ? '2px solid #2563eb' : `1.5px solid ${rect.borderColor}`,
+                  border: isSelected ? '2px solid var(--bh-blue)' : `1.5px solid ${rect.borderColor}`,
                   borderRadius: '4px',
                   boxShadow: isSelected ? '0 0 0 2px rgba(37,99,235,0.2)' : 'none',
                   cursor: 'move',
@@ -334,13 +334,13 @@ export const Canvas: React.FC<CanvasProps> = ({
                   top: `${img.y}px`,
                   width: `${img.width}px`,
                   height: `${img.height}px`,
-                  border: isSelected ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                  border: isSelected ? '2px solid var(--bh-blue)' : '1px solid #cbd5e1',
                   borderRadius: '4px',
                   boxShadow: isSelected ? '0 0 0 2px rgba(37,99,235,0.2)' : '0 1px 3px rgba(0,0,0,0.05)',
                   cursor: 'move',
                   zIndex: isSelected ? 20 : img.zIndex,
                   overflow: 'hidden',
-                  backgroundColor: '#f8fafc',
+                  backgroundColor: 'var(--bh-paper-2)',
                   boxSizing: 'border-box',
                   touchAction: 'none',
                 }}
@@ -374,7 +374,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   width: `${btn.width}px`,
                   height: `${btn.height}px`,
                   backgroundColor: '#ffffff',
-                  border: isSelected ? '2px solid #2563eb' : '1.5px solid #64748b',
+                  border: isSelected ? '2px solid var(--bh-blue)' : '1.5px solid #64748b',
                   borderRadius: '6px',
                   boxShadow: isSelected
                     ? '0 0 0 2px rgba(37,99,235,0.25)'
@@ -395,7 +395,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                   style={{
                     fontSize: '13px',
                     fontWeight: 600,
-                    color: '#0f172a',
+                    color: 'var(--bh-ink)',
                     textAlign: 'center',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -423,8 +423,8 @@ export const Canvas: React.FC<CanvasProps> = ({
                     minWidth: isMobile ? '36px' : undefined,
                     minHeight: isMobile ? '36px' : undefined,
                     borderRadius: '4px',
-                    backgroundColor: btn.targetPageId ? '#eff6ff' : '#f0fdf4',
-                    color: btn.targetPageId ? '#2563eb' : '#16a34a',
+                    backgroundColor: btn.targetPageId ? 'var(--bh-paper-2)' : '#f0fdf4',
+                    color: btn.targetPageId ? 'var(--bh-blue)' : '#16a34a',
                     border: 'none',
                     cursor: 'pointer',
                     flexShrink: 0,

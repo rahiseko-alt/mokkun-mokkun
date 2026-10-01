@@ -15,7 +15,7 @@ export const NoTokenModal: React.FC<NoTokenModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
+        backgroundColor: 'rgba(17, 17, 17, 0.45)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -37,12 +37,12 @@ export const NoTokenModal: React.FC<NoTokenModalProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
           <AlertCircle size={22} color="#f59e0b" />
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--bh-ink)' }}>
             識別子が不足しています
           </h3>
         </div>
 
-        <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6', marginBottom: '20px' }}>
+        <p style={{ fontSize: '14px', color: 'var(--bh-ink)', lineHeight: '1.6', marginBottom: '20px' }}>
           この階層で使用できる識別子がありません。<br />
           設定画面で識別子を追加してください。
         </p>
@@ -54,8 +54,8 @@ export const NoTokenModal: React.FC<NoTokenModalProps> = ({
               padding: '8px 16px',
               fontSize: '13px',
               fontWeight: 500,
-              color: '#475569',
-              backgroundColor: '#f1f5f9',
+              color: 'var(--bh-ink)',
+              backgroundColor: 'var(--bh-paper-2)',
               borderRadius: '6px',
             }}
           >
@@ -68,7 +68,7 @@ export const NoTokenModal: React.FC<NoTokenModalProps> = ({
               fontSize: '13px',
               fontWeight: 600,
               color: '#ffffff',
-              backgroundColor: '#2563eb',
+              backgroundColor: 'var(--bh-blue)',
               borderRadius: '6px',
             }}
           >

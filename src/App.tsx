@@ -32,6 +32,7 @@ import { PageListSidebar } from './components/PageListSidebar'
 import { PageInfoPanel } from './components/PageInfoPanel'
 import { Canvas } from './components/Canvas'
 import { Toolbar } from './components/Toolbar'
+import { X } from 'lucide-react'
 import { CreateChildPageModal } from './components/modals/CreateChildPageModal'
 import { NoTokenModal } from './components/modals/NoTokenModal'
 import { DeleteConfirmModal } from './components/modals/DeleteConfirmModal'
@@ -59,8 +60,7 @@ export function App() {
   const [windowWidth, setWindowWidth] = useState<number>(
     typeof window !== 'undefined' ? window.innerWidth : 1200
   )
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false)
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -69,6 +69,12 @@ export function App() {
   }, [])
 
   const isMobile = windowWidth < 768
+
+  // モバイルでは操作後にパネルを閉じ、描画画面で結果を確認できるようにする
+  const withPanelClose = <T extends unknown[]>(action: (...args: T) => void) => (...args: T) => {
+    action(...args)
+    if (isMobile) setIsPanelOpen(false)
+  }
 
   // モーダル管理
   const [activeModal, setActiveModal] = useState<
@@ -168,7 +174,7 @@ export function App() {
     }))
     setSelectedElementId(null)
     if (isMobile) {
-      setIsSidebarOpen(false)
+      setIsPanelOpen(false)
     }
   }
 
@@ -182,7 +188,7 @@ export function App() {
       setSelectedElementId(null)
       showToast('ルートページを作成しました')
       if (isMobile) {
-        setIsSidebarOpen(false)
+        setIsPanelOpen(false)
       }
     }
   }
@@ -216,7 +222,7 @@ export function App() {
     setPageToDeleteId(currentPage.id)
     setActiveModal('deleteConfirm')
     if (isMobile) {
-      setIsInfoPanelOpen(false)
+      setIsPanelOpen(false)
     }
   }
 
@@ -491,17 +497,8 @@ export function App() {
   )
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100vw',
-        height: '100dvh',
-        overflow: 'hidden',
-        backgroundColor: '#f8fafc',
-      }}
-    >
-      {/* 5.1 上部ヘッダー (レスポンシブトグル付き) */}
+    <div className="bh-app">
+      {/* 5.1 上部ヘッダー (モバイル時は操作パネルの開閉ボタン付き) */}
       <Header
         projectName={projectState.project.name}
         onUpdateProjectName={handleUpdateProjectName}
@@ -510,10 +507,8 @@ export function App() {
         onOpenSnapshots={() => setActiveModal('snapshots')}
         onOpenSettings={() => setActiveModal('settings')}
         saveToastMessage={toastMessage}
-        onToggleSidebar={() => { setIsSidebarOpen((prev) => !prev); setIsInfoPanelOpen(false) }}
-        onToggleInfoPanel={() => { setIsInfoPanelOpen((prev) => !prev); setIsSidebarOpen(false) }}
-        isSidebarOpen={isSidebarOpen}
-        isInfoPanelOpen={isInfoPanelOpen}
+        onTogglePanel={() => setIsPanelOpen((prev) => !prev)}
+        isPanelOpen={isPanelOpen}
       />
 
       {isMobile && <div className="mobile-page-location">
@@ -521,62 +516,9 @@ export function App() {
         <div><span>{currentPage.identifierPath}</span><strong>{currentPage.displayName}</strong></div>
         <small>編集は自動保存</small>
       </div>}
-      {/* メインワークスペース */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {/* 左: ページ階層一覧 (デスクトップ時は常時、モバイル時はドロワー) */}
-        {!isMobile ? (
-          <PageListSidebar
-            pages={projectState.pages}
-            currentPageId={currentPage.id}
-            onSelectPage={handleSelectPage}
-            onAddRootPage={handleAddRootPage}
-          />
-        ) : (
-          isSidebarOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(15, 23, 42, 0.35)',
-                zIndex: 45,
-                display: 'flex',
-              }}
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <div
-                className="drawer-left"
-                style={{
-                  height: '100%',
-                  boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
-                  backgroundColor: '#ffffff',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <PageListSidebar
-                  pages={projectState.pages}
-                  currentPageId={currentPage.id}
-                  onSelectPage={handleSelectPage}
-                  onAddRootPage={handleAddRootPage}
-                  onClose={() => setIsSidebarOpen(false)}
-                />
-              </div>
-            </div>
-          )
-        )}
-
-        {/* 中央: 白いモックキャンバス + ツールバー */}
-        <main
-          style={{
-            minWidth: 0,
-            minHeight: 0,
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            backgroundColor: '#ffffff',
-            position: 'relative',
-          }}
-        >
+      {/* メインワークスペース: 左に描画画面、右に操作パネル (モバイル時はスライドイン) */}
+      <div className="bh-workspace">
+        <main className="bh-stage">
           <Canvas
             key={currentPage.id}
             isMobile={isMobile}
@@ -586,40 +528,30 @@ export function App() {
             onUpdateElement={handleUpdateElement}
             onButtonClick={handleButtonClick}
           />
-
-          {isMobile && selectedElement && <details className="mobile-element-size" key={selectedElement.id}>
-            <summary>位置・サイズを数値で調整</summary>
-            <div>{(['x', 'y', 'width', 'height'] as const).map((field) => <label key={field}>
-              {{ x: '左から', y: '上から', width: '幅', height: '高さ' }[field]}
-              <input type="number" inputMode="numeric" min={field === 'x' || field === 'y' ? 0 : 40} value={selectedElement[field]} onChange={e => {
-                if (e.target.value === '') return
-                const value = Number(e.target.value)
-                if (!Number.isFinite(value)) return
-                const next = Math.max(field === 'x' || field === 'y' ? 0 : 40, Math.round(value))
-                const updated = { ...selectedElement, [field]: next, updatedAt: new Date().toISOString() }
-                if (selectedElement.type === 'image' && selectedElement.keepAspectRatio) {
-                  if (field === 'width') updated.height = Math.max(40, Math.round(next * selectedElement.height / selectedElement.width))
-                  if (field === 'height') updated.width = Math.max(40, Math.round(next * selectedElement.width / selectedElement.height))
-                }
-                handleUpdateElement(updated)
-              }} />
-            </label>)}</div>
-          </details>}
-          {/* 下部: ツールバー ([四角] [画像] [ボタン] 等) */}
-          <Toolbar
-            onAddRectangle={handleAddRectangle}
-            onAddImage={handleAddImage}
-            onAddButton={handleAddButton}
-            selectedElement={selectedElement}
-            onDeleteSelected={handleDeleteSelectedElement}
-            onUpdateButtonLabel={handleUpdateButtonLabel}
-            onTriggerButtonAction={handleButtonClick}
-            targetPagePath={targetPagePath}
-          />
         </main>
 
-        {/* 右: ページ情報 (デスクトップ時は常時、モバイル時はドロワー) */}
-        {!isMobile ? (
+        {isMobile && <div className={'bh-backdrop' + (isPanelOpen ? ' is-open' : '')} onClick={() => setIsPanelOpen(false)} aria-hidden="true" />}
+        <aside
+          id="control-panel"
+          className={'bh-panel' + (isMobile ? ' is-drawer' : '') + (isMobile && isPanelOpen ? ' is-open' : '')}
+          aria-label="操作パネル"
+          inert={isMobile && !isPanelOpen}
+        >
+          {isMobile && <div className="bh-panel-head">
+            <strong>操作パネル</strong>
+            <button type="button" className="bh-btn bh-btn-small" onClick={() => setIsPanelOpen(false)} aria-label="操作パネルを閉じる"><X size={18} /></button>
+          </div>}
+          <Toolbar
+            onAddRectangle={withPanelClose(handleAddRectangle)}
+            onAddImage={withPanelClose(handleAddImage)}
+            onAddButton={withPanelClose(handleAddButton)}
+            selectedElement={selectedElement}
+            onDeleteSelected={handleDeleteSelectedElement}
+            onUpdateElement={handleUpdateElement}
+            onUpdateButtonLabel={handleUpdateButtonLabel}
+            onTriggerButtonAction={withPanelClose(handleButtonClick)}
+            targetPagePath={targetPagePath}
+          />
           <PageInfoPanel
             page={currentPage}
             isOnlyPage={projectState.pages.length <= 1}
@@ -627,40 +559,13 @@ export function App() {
             onUpdateComment={handleUpdateComment}
             onRequestDeletePage={handleRequestDeletePage}
           />
-        ) : (
-          isInfoPanelOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(15, 23, 42, 0.35)',
-                zIndex: 45,
-                display: 'flex',
-                justifyContent: 'flex-end',
-              }}
-              onClick={() => setIsInfoPanelOpen(false)}
-            >
-              <div
-                className="drawer-right"
-                style={{
-                  height: '100%',
-                  boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
-                  backgroundColor: '#ffffff',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <PageInfoPanel
-                  page={currentPage}
-                  isOnlyPage={projectState.pages.length <= 1}
-                  onUpdateDisplayName={handleUpdateDisplayName}
-                  onUpdateComment={handleUpdateComment}
-                  onRequestDeletePage={handleRequestDeletePage}
-                  onClose={() => setIsInfoPanelOpen(false)}
-                />
-              </div>
-            </div>
-          )
-        )}
+          <PageListSidebar
+            pages={projectState.pages}
+            currentPageId={currentPage.id}
+            onSelectPage={handleSelectPage}
+            onAddRootPage={handleAddRootPage}
+          />
+        </aside>
       </div>
 
       {/* --- モーダル群 --- */}

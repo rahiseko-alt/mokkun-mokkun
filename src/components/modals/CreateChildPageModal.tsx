@@ -22,7 +22,7 @@ export const CreateChildPageModal: React.FC<CreateChildPageModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
+        backgroundColor: 'rgba(17, 17, 17, 0.45)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -42,19 +42,19 @@ export const CreateChildPageModal: React.FC<CreateChildPageModalProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--bh-ink)', marginBottom: '12px' }}>
           このボタンのページを作成しますか？
         </h3>
 
-        <div style={{ fontSize: '13px', color: '#475569', marginBottom: '16px', lineHeight: '1.6' }}>
-          <div>親ページ: <span style={{ fontWeight: 600, color: '#1e293b' }}>{parentPath}</span></div>
+        <div style={{ fontSize: '13px', color: 'var(--bh-ink)', marginBottom: '16px', lineHeight: '1.6' }}>
+          <div>親ページ: <span style={{ fontWeight: 600, color: 'var(--bh-ink)' }}>{parentPath}</span></div>
           {nextPath && (
-            <div>作成予定の識別子: <span style={{ fontWeight: 700, color: '#2563eb' }}>{nextPath}</span></div>
+            <div>作成予定の識別子: <span style={{ fontWeight: 700, color: 'var(--bh-blue)' }}>{nextPath}</span></div>
           )}
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--bh-muted)', marginBottom: '6px' }}>
             新しいページの表示名
           </label>
           <input
@@ -83,8 +83,8 @@ export const CreateChildPageModal: React.FC<CreateChildPageModalProps> = ({
               padding: '8px 16px',
               fontSize: '13px',
               fontWeight: 500,
-              color: '#475569',
-              backgroundColor: '#f1f5f9',
+              color: 'var(--bh-ink)',
+              backgroundColor: 'var(--bh-paper-2)',
               borderRadius: '6px',
             }}
           >
@@ -97,7 +97,7 @@ export const CreateChildPageModal: React.FC<CreateChildPageModalProps> = ({
               fontSize: '13px',
               fontWeight: 600,
               color: '#ffffff',
-              backgroundColor: '#2563eb',
+              backgroundColor: 'var(--bh-blue)',
               borderRadius: '6px',
             }}
           >

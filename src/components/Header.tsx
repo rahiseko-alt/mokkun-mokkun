@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FolderPlus, Save, History, Settings, Edit2, Check, Menu, Info, MoreHorizontal } from 'lucide-react'
-import './MobileControls.css'
+import { FolderPlus, Save, History, Settings, Edit2, Check, SlidersHorizontal, MoreHorizontal } from 'lucide-react'
 
 interface HeaderProps {
   projectName: string
@@ -10,16 +9,13 @@ interface HeaderProps {
   onOpenSnapshots: () => void
   onOpenSettings: () => void
   saveToastMessage: string | null
-  onToggleSidebar?: () => void
-  onToggleInfoPanel?: () => void
-  isSidebarOpen?: boolean
-  isInfoPanelOpen?: boolean
+  onTogglePanel?: () => void
+  isPanelOpen?: boolean
 }
 
 export const Header: React.FC<HeaderProps> = ({
   projectName, onUpdateProjectName, onNewProject, onSaveSnapshot,
-  onOpenSnapshots, onOpenSettings, saveToastMessage, onToggleSidebar,
-  onToggleInfoPanel, isSidebarOpen, isInfoPanelOpen,
+  onOpenSnapshots, onOpenSettings, saveToastMessage, onTogglePanel, isPanelOpen,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(projectName)
@@ -57,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="mc-header">
       <div className="mc-header-main">
+        <span className="bh-logo" aria-hidden="true"><i /><i /><i /></span>
         <div className="mc-project">
           {isEditingName ? (
             <div className="mc-name-edit">
@@ -75,13 +72,10 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="mc-header-actions">
           <button type="button" className="mc-control mc-save" onClick={onSaveSnapshot} title="構成を保存"><Save size={18} /><span>構成を保存</span></button>
           {!isMobile && <div className="mc-desktop-actions">{secondaryActions}</div>}
-          <button type="button" className="mc-control mc-more" aria-label="その他の操作" aria-expanded={isMenuOpen} aria-controls="project-action-menu" onClick={() => setIsMenuOpen(!isMenuOpen)}><MoreHorizontal size={22} /></button>
+          {isMobile && <button type="button" className="mc-control mc-more" aria-label="その他の操作" aria-expanded={isMenuOpen} aria-controls="project-action-menu" onClick={() => setIsMenuOpen(!isMenuOpen)}><MoreHorizontal size={22} /></button>}
+          {isMobile && onTogglePanel && <button type="button" className="mc-control mc-panel-toggle" aria-expanded={!!isPanelOpen} aria-controls="control-panel" onClick={onTogglePanel} title="操作パネルを開閉"><SlidersHorizontal size={18} /><span>操作</span></button>}
         </div>
       </div>
-      {isMobile && <nav className="mc-mobile-nav" aria-label="編集パネル">
-        {onToggleSidebar && <button type="button" className="mc-control" aria-expanded={!!isSidebarOpen} onClick={onToggleSidebar} title="ページ一覧を開閉"><Menu size={18} /><span>ページ一覧</span></button>}
-        {onToggleInfoPanel && <button type="button" className="mc-control" aria-expanded={!!isInfoPanelOpen} onClick={onToggleInfoPanel} title="ページ情報を開閉"><Info size={18} /><span>ページ情報</span></button>}
-      </nav>}
       {isMenuOpen && <div className="mc-menu" id="project-action-menu" aria-label="その他の操作">{secondaryActions}</div>}
       {saveToastMessage && <div className="mc-save-status" role="status">{saveToastMessage}</div>}
     </header>
