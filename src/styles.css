@@ -147,3 +147,6 @@
 .bh-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .bh-tools .bh-btn { padding-inline: 6px; }
 .bh-tools .bh-btn[aria-pressed='true'] { background: var(--bh-ink); color: var(--bh-paper); }
+
+/* 鉛筆/消しゴム中だけ出す終了ボタン */
+.canvas-tool-exit { position: absolute; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 45; min-height: 44px; padding: 0 16px; border: var(--bh-border); background: var(--bh-ink); color: var(--bh-paper); font-size: 14px; font-weight: 700; }

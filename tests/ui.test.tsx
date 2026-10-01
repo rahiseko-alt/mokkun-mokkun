@@ -98,9 +98,18 @@ describe('UI Mock App Component Tests', () => {
     fireEvent.click(screen.getByRole('button', { name: '鉛筆' }))
     const layer = container.querySelector('.canvas-draw-layer') as Element
     fireEvent.pointerDown(layer, { button: 0, pointerId: 1, clientX: 100, clientY: 100 })
-    fireEvent.pointerMove(layer, { pointerId: 1, clientX: 140, clientY: 120 })
-    fireEvent.pointerUp(layer, { pointerId: 1 })
-    expect(container.querySelectorAll('.canvas-draw-layer path')).toHaveLength(1)
+    fireEvent.pointerMove(layer, { pointerId: 1, buttons: 1, clientX: 140, clientY: 120 })
+    // 描画画面の外で指を離しても線は確定し、その後のホバーでは描き続けない
+    fireEvent.pointerUp(window, { pointerId: 1 })
+    fireEvent.pointerMove(layer, { pointerId: 1, buttons: 0, clientX: 300, clientY: 300 })
+    const paths = container.querySelectorAll('.canvas-draw-layer path')
+    expect(paths).toHaveLength(1)
+    expect(paths[0].getAttribute('d')).toBe('M100 100 L140 120')
+
+    // 鉛筆中は「鉛筆を終了」で選択に戻れる
+    fireEvent.click(screen.getByRole('button', { name: '鉛筆を終了' }))
+    expect(screen.queryByRole('button', { name: '鉛筆を終了' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '選択' })).toHaveAttribute('aria-pressed', 'true')
 
     fireEvent.click(screen.getByRole('button', { name: '消しゴム' }))
     fireEvent.pointerDown(layer, { button: 0, pointerId: 2, clientX: 141, clientY: 121 })

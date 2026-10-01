@@ -23,6 +23,7 @@ interface CanvasProps {
   onAddStroke: (points: number[]) => void
   onRemoveStrokes: (ids: string[]) => void
   tool: DrawTool
+  onExitTool: () => void
   isMobile?: boolean
 }
 
@@ -43,6 +44,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   onAddStroke,
   onRemoveStrokes,
   tool,
+  onExitTool,
   isMobile = false,
 }) => {
   const [dragMode, setDragMode] = useState<DragMode>(null)
@@ -206,28 +208,60 @@ export const Canvas: React.FC<CanvasProps> = ({
     }).map((st) => st.id)
     if (hit.length) onRemoveStrokes(hit)
   }
+  // 指/ボタンを離したら必ず線を確定する (離した位置が描画画面の外でも取りこぼさない)
+  const activePointerRef = useRef<number | null>(null)
+  const draftRef = useRef<number[] | null>(null)
+  const finishStroke = () => {
+    const pts = draftRef.current
+    activePointerRef.current = null
+    draftRef.current = null
+    setDraftStroke(null)
+    if (pts) onAddStroke(pts.length === 2 ? [...pts, pts[0] + 0.5, pts[1]] : pts)
+  }
+  useEffect(() => {
+    if (!draftStroke) return
+    const onUp = (e: PointerEvent) => { if (e.pointerId === activePointerRef.current) finishStroke() }
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    return () => {
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
+  })
+  // ツールを切り替えたら描きかけの線は確定して終わる
+  useEffect(() => {
+    if (tool !== 'pen' && activePointerRef.current !== null) finishStroke()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tool])
+
   const handleDrawPointerDown = (e: React.PointerEvent) => {
     if (tool === 'select') return
     e.stopPropagation()
-    try { (e.target as Element).setPointerCapture?.(e.pointerId) } catch { /* 非対応環境 */ }
+    if (activePointerRef.current !== null) return // 2本目の指は無視
+    try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch { /* 非対応環境 */ }
     const [x, y] = toScenePoint(e)
-    if (tool === 'pen') setDraftStroke([x, y])
-    else eraseAt(x, y)
+    if (tool === 'pen') {
+      activePointerRef.current = e.pointerId
+      draftRef.current = [x, y]
+      setDraftStroke(draftRef.current)
+    } else eraseAt(x, y)
   }
   const handleDrawPointerMove = (e: React.PointerEvent) => {
-    if (tool === 'pen' && draftStroke) {
+    if (tool === 'pen') {
+      if (e.pointerId !== activePointerRef.current) return
+      // 押していない状態の移動 (マウスのホバー) では描かない
+      if (e.buttons === 0) { finishStroke(); return }
       const [x, y] = toScenePoint(e)
-      setDraftStroke((prev) => (prev ? [...prev, x, y] : prev))
+      if (!draftRef.current) return
+      draftRef.current = [...draftRef.current, x, y]
+      setDraftStroke(draftRef.current)
     } else if (tool === 'eraser' && e.buttons) {
       const [x, y] = toScenePoint(e)
       eraseAt(x, y)
     }
   }
-  const handleDrawPointerUp = () => {
-    if (draftStroke) {
-      onAddStroke(draftStroke.length === 2 ? [...draftStroke, draftStroke[0] + 0.5, draftStroke[1]] : draftStroke)
-      setDraftStroke(null)
-    }
+  const handleDrawPointerUp = (e: React.PointerEvent) => {
+    if (e.pointerId === activePointerRef.current) finishStroke()
   }
 
   const renderDeleteButton = () => (
@@ -569,6 +603,7 @@ export const Canvas: React.FC<CanvasProps> = ({
       </div>
       </div>
     </div>
+      {tool !== 'select' && <button type="button" className="canvas-tool-exit" onClick={onExitTool}>{tool === 'pen' ? '鉛筆' : '消しゴム'}を終了</button>}
     </div>
   )
 }
